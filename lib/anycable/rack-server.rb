@@ -31,7 +31,7 @@ module AnyCable
       def middleware
         @middleware ||= begin
           unless started?
-            msg = "Please, run `AnyCable::RackServer.setup!` before using the middleware"
+            msg = 'Run `AnyCable::RackServer.setup!` before using the middleware'
             raise Errors::MiddlewareSetup, msg
           end
           @_middleware
