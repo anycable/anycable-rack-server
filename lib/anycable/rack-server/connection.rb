@@ -29,7 +29,6 @@ module AnyCable
       def handle_open
         connect_rpc
         connect if respond_to?(:connect)
-        send_welcome_message
         log(:debug) { log_fmt('Opened') }
 
       rescue Errors::Unauthorized
@@ -89,6 +88,7 @@ module AnyCable
         @_disconnected = true
       end
 
+      # TODO: handle gRPC exceptions
       def connect_rpc
         response = rpc_client.connect(headers: headers, path: request.url)
         if response.status == :SUCCESS
@@ -168,13 +168,6 @@ module AnyCable
         response['transmissions'].each { |transmission| transmit(decode(transmission)) }
         hub.remove_channel(socket, identifier) if response['stop_streams']
         response['streams'].each { |stream| hub.add_subscriber(stream, socket, identifier) }
-      end
-
-      def send_welcome_message
-        # Send welcome message to the internal connection monitor channel.
-        # This ensures the connection monitor state is reset after a successful
-        # websocket connection.
-        transmit(type: :welcome)
       end
 
       def encode(cable_message)
