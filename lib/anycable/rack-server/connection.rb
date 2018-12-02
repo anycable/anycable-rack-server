@@ -28,6 +28,7 @@ module AnyCable
       def handle_open
         response = connect_rpc
         if response.status == :SUCCESS
+          send_welcome_message
           @_identifiers = response['identifiers']
           log(:debug) { log_fmt('Opened') }
           # response['transmissions'].each { |transmission| transmit(decode(transmission)) }
@@ -109,7 +110,7 @@ module AnyCable
       end
 
       def subscribe(identifier)
-        response = execute_command('subscribe')
+        response = execute_command('subscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.add(identifier)
           process_command_result(response, identifier)
@@ -119,7 +120,7 @@ module AnyCable
       end
 
       def send_message(identifier, data)
-        response = execute_command('message', data)
+        response = execute_command('message', identifier, data)
         if response.status == :SUCCESS
           process_command_result(response, identifier)
         else
@@ -128,7 +129,7 @@ module AnyCable
       end
 
       def unsubscribe(identifier)
-        response = execute_command('unsubscribe')
+        response = execute_command('unsubscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.delete(identifier)
           process_command_result(response, identifier)
@@ -141,7 +142,7 @@ module AnyCable
         @headers ||= { "Cookie" => request.cookies.map {  |k,v| "#{k}=#{v};"}.join }
       end
 
-      def execute_command(command, data = '')
+      def execute_command(command, identifier, data = '')
         rpc_client.command(
           command: command,
           identifier: identifier,
@@ -162,6 +163,10 @@ module AnyCable
 
       def decode(websocket_message)
         coder.decode(websocket_message)
+      end
+
+      def send_welcome_message
+        transmit(type: :welcome)
       end
 
       def log_fmt(msg)

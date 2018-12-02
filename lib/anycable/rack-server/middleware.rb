@@ -21,6 +21,7 @@ module AnyCable
 
         rack_hijack(env)
         listen_socket(env)
+
         [-1, {}, []]
       end
 
