@@ -53,7 +53,6 @@ module AnyCable
         end
       end
 
-
       def broadcast(stream, message, coder)
         list = @sync.synchronize do
           return unless @streams.key?(stream)
