@@ -5,6 +5,7 @@ module AnyCable
     module Errors
       class HijackNotAvailable < RuntimeError; end
       class UnknownCommand < StandardError; end
+      class MiddlewareSetup < StandardError; end
     end
   end
 end
