@@ -3,7 +3,6 @@
 require 'anycable/rack-server/rpc/client'
 require 'anycable/rack-server/logging'
 require 'anycable/rack-server/errors'
-require 'set'
 
 module AnyCable
   # rubocop:disable Metrics/LineLength

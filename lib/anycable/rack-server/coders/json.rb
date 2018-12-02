@@ -1,5 +1,3 @@
-require 'json'
-
 module AnyCable
   module RackServer
     module Coders
