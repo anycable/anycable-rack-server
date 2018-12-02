@@ -35,7 +35,18 @@ gem 'jbuilder', '~> 2.5'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
-gem 'anycable'
+
+
+gem 'pry'
+
+# anyt compatibility
+gem 'concurrent-ruby', '1.0.5'
+gem 'minitest', '5.10.3'
+gem 'anycable', '0.5.2'
+gem 'redis', '3.3.5'
+gem 'anycable-rails'
+gem 'anyt'
+gem 'rack-cors', require: 'rack/cors'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

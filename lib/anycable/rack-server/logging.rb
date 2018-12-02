@@ -3,7 +3,7 @@
 module AnyCable
   module RackServer
     module Logging # :nodoc:
-      PREFIX = "AnycableRackServer"
+      PREFIX = 'AnycableRackServer'
 
       private
 

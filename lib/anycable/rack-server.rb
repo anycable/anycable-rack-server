@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'set'
+require 'websocket'
 require 'anycable/rack-server/hub'
 require 'anycable/rack-server/pinger'
 require 'anycable/rack-server/errors'
