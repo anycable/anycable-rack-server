@@ -29,7 +29,7 @@ module AnyCable
 
       def handshake
         @handshake ||= WebSocket::Handshake::Server.new(
-          protocols: AnyCable::RackServer::PROTOCOLS
+          protocols: PROTOCOLS
         )
       end
 

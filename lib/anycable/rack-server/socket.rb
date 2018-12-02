@@ -40,7 +40,7 @@ module AnyCable
       end
 
       def request
-        @_request ||= Rack::Request.new(@env)
+        @_request ||= ::Rack::Request.new(@env)
       end
 
       def onopen(&block)
