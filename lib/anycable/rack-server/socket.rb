@@ -15,10 +15,10 @@ module AnyCable
         @version = version
         @active = true
 
-        @open_handlers    = []
-        @message_handlers = []
-        @close_handlers   = []
-        @error_handlers   = []
+        @_open_handlers    = []
+        @_message_handlers = []
+        @_close_handlers   = []
+        @_error_handlers   = []
 
         @close_on_error = true
       end
@@ -40,23 +40,23 @@ module AnyCable
       end
 
       def request
-        @request ||= Rack::Request.new(@env)
+        @_request ||= Rack::Request.new(@env)
       end
 
       def onopen(&block)
-        @open_handlers << block
+        @_open_handlers << block
       end
 
       def onmessage(&block)
-        @message_handlers << block
+        @_message_handlers << block
       end
 
       def onclose(&block)
-        @close_handlers << block
+        @_close_handlers << block
       end
 
       def onerror(&block)
-        @error_handlers << block
+        @_error_handlers << block
       end
 
       # rubocop: disable Metrics/MethodLength
@@ -65,14 +65,14 @@ module AnyCable
         Thread.new do
           Thread.current.abort_on_exception = true
           begin
-            @open_handlers.each(&:call)
+            @_open_handlers.each(&:call)
             each_frame do |data|
-              @message_handlers.each do |handler|
+              @_message_handlers.each do |handler|
                 begin
                   handler.call(data)
                 rescue => e # rubocop: disable Style/RescueStandardError
                   log(:error, "Socket receive failed: #{e}")
-                  @error_handlers.each { |eh| eh.call(e, data) }
+                  @_error_handlers.each { |eh| eh.call(e, data) }
                   close if close_on_error
                 end
               end
@@ -87,7 +87,7 @@ module AnyCable
       def close
         return unless @active
 
-        @close_handlers.each(&:call)
+        @_close_handlers.each(&:call)
         close!
 
         @active = false

@@ -7,6 +7,7 @@ require 'anycable/rack-server/socket'
 module AnyCable
   module RackServer
     class Middleware
+      PROTOCOLS = ['actioncable-v1-json', 'actioncable-unsupported'].freeze
       attr_reader :pinger, :hub, :coder
 
       def initialize(_app, pinger, hub, coder)

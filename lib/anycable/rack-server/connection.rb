@@ -12,7 +12,7 @@ module AnyCable
       # rubocop:enable Metrics/LineLength
       include Logging
 
-      attr_reader :subscriptions, :streams, :coder, :rpc_client, :socket, :hub
+      attr_reader :coder, :rpc_client, :socket, :hub
 
       def initialize(socket, hub, coder)
         @socket = socket
@@ -32,7 +32,7 @@ module AnyCable
         send_welcome_message
         log(:debug) { log_fmt('Opened') }
 
-      rescue UnauthorizedError
+      rescue Errors::Unauthorized
         log(:debug) { log_fmt('Authorization failed') }
         close
       end
@@ -40,10 +40,9 @@ module AnyCable
       def handle_close
         disconnected!
         disconnect if respond_to?(:disconnect)
+        log(:debug) { log_fmt('Closed') }
         disconnect_rpc
         hub.remove_socket(socket)
-
-        log(:debug) { log_fmt('Closed') }
       end
 
       def handle_command(websocket_message)
