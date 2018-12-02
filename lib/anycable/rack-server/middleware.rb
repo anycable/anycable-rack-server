@@ -28,9 +28,7 @@ module AnyCable
       private
 
       def handshake
-        @handshake ||= WebSocket::Handshake::Server.new(
-          protocols: PROTOCOLS
-        )
+        @handshake ||= WebSocket::Handshake::Server.new(protocols: PROTOCOLS)
       end
 
       def rack_hijack(env)

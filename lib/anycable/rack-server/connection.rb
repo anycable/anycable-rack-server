@@ -81,7 +81,6 @@ module AnyCable
         socket.request
       end
 
-      # Request cookies
       def cookies
         request.cookies
       end
