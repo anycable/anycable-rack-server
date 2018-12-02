@@ -8,6 +8,7 @@ module AnyCable
 
       def initialize
         @_sockets = []
+        run
       end
 
       def add(socket)
