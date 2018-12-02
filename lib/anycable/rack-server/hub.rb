@@ -61,7 +61,8 @@ module AnyCable
         end
 
         list.each do |(channel_id, sockets)|
-          cmessage = channel_message(channel_id, message, coder)
+          decoded = coder.decode(message)
+          cmessage = channel_message(channel_id, decoded, coder)
           sockets.each { |socket| socket.transmit(cmessage) }
         end
       end

@@ -11,7 +11,7 @@ module AnyCable
         end
 
         def broadcast(stream, message)
-          hub.broadcast(stream, JSON.parse(message), coder)
+          hub.broadcast(stream, message, coder)
         end
       end
     end

@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'json'
+
 module AnyCable
   module RackServer
     module Coders

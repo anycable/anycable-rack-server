@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
 require 'set'
 require 'anycable/rack-server/hub'
 require 'anycable/rack-server/pinger'
