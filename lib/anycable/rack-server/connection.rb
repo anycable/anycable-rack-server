@@ -25,11 +25,12 @@ module AnyCable
         @_subscriptions = Set.new
       end
 
+      # TODO: refactor, add separate response handlers for major message types
       def handle_open
         response = connect_rpc
         if response.status == :SUCCESS
           send_welcome_message
-          @_identifiers = response['identifiers']
+          @_identifiers = response.identifiers
           log(:debug) { log_fmt('Opened') }
         else
           @_identifiers = ''
