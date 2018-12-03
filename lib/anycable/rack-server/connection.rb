@@ -40,7 +40,7 @@ module AnyCable
       end
 
       def handle_close
-        disconnected!
+        disconnect!
         log(:debug) { log_fmt('Closed') }
         response = disconnect_rpc
         if response.status == :SUCCESS
@@ -91,7 +91,7 @@ module AnyCable
 
       private
 
-      def disconnected!
+      def disconnect!
         @_disconnected = true
       end
 
@@ -138,7 +138,7 @@ module AnyCable
       end
 
       def headers
-        @headers ||= { "Cookie" => request.cookies.map {  |k,v| "#{k}=#{v};"}.join }
+        @headers ||= { 'cookie' => request.cookies.map {  |k,v| "#{k}=#{v};"}.join }
       end
 
       def execute_command(command, identifier, data = '')
