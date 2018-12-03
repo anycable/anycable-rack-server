@@ -69,7 +69,7 @@ module AnyCable
 
       def transmit(cable_message)
         return if disconnected?
-        socket.transmit encode(cable_message)
+        socket.transmit(encode(cable_message))
       end
 
       def close

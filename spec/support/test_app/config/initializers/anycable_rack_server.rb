@@ -10,4 +10,5 @@ require 'anycable-rack-server'
 
 AnyCable::RackServer.setup!
 
-Thread.new { Anycable::Server.start }
+Thread.new { AnyCable::Server.start }
+
