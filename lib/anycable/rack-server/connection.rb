@@ -31,12 +31,12 @@ module AnyCable
           send_welcome_message
           @_identifiers = response['identifiers']
           log(:debug) { log_fmt('Opened') }
-          response['transmissions'].each { |transmission| transmit(decode(transmission)) }
         else
           @_identifiers = ''
           log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
           close
         end
+        response.transmissions.each { |transmission| transmit(decode(transmission)) }
       end
 
       def handle_close
@@ -116,29 +116,28 @@ module AnyCable
         response = execute_command('subscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.add(identifier)
-          process_command_result(response, identifier)
         else
           log(:error, log_fmt("RPC subscribe command failed: #{response.inspect}"))
         end
+        process_result(response, identifier)
       end
 
       def send_message(identifier, data)
         response = execute_command('message', identifier, data)
-        if response.status == :SUCCESS
-          process_command_result(response, identifier)
-        else
+        unless response.status == :SUCCESS
           log(:error, log_fmt("RPC message command failed: #{response.inspect}"))
         end
+        process_result(response, identifier)
       end
 
       def unsubscribe(identifier)
         response = execute_command('unsubscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.delete(identifier)
-          process_command_result(response, identifier)
         else
           log(:error, log_fmt("RPC unsubscribe command failed: #{response.inspect}"))
         end
+        process_result(response, identifier)
       end
 
       def headers
@@ -167,10 +166,10 @@ module AnyCable
         )
       end
 
-      def process_command_result(response, identifier)
-        response['transmissions'].each { |transmission| transmit(decode(transmission)) }
-        hub.remove_channel(socket, identifier) if response['stop_streams']
-        response['streams'].each { |stream| hub.add_subscriber(stream, socket, identifier) }
+      def process_result(response, identifier)
+        response.transmissions.each { |transmission| transmit(decode(transmission)) }
+        hub.remove_channel(socket, identifier) if response.stop_streams
+        response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
       end
 
       def encode(cable_message)
