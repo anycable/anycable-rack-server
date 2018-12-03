@@ -31,7 +31,7 @@ module AnyCable
           send_welcome_message
           @_identifiers = response['identifiers']
           log(:debug) { log_fmt('Opened') }
-          # response['transmissions'].each { |transmission| transmit(decode(transmission)) }
+          response['transmissions'].each { |transmission| transmit(decode(transmission)) }
         else
           @_identifiers = ''
           log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
@@ -85,6 +85,10 @@ module AnyCable
         request.cookies
       end
 
+      def request_path
+        request.fullpath
+      end
+
       def disconnected?
         @_disconnected == true
       end
@@ -96,7 +100,7 @@ module AnyCable
       end
 
       def connect_rpc
-        rpc_client.connect(headers: headers, path: request.url)
+        rpc_client.connect(headers: headers, path: request_path)
       end
 
       def disconnect_rpc
@@ -104,7 +108,7 @@ module AnyCable
           identifiers: @_identifiers,
           subscriptions: @_subscriptions.to_a,
           headers: headers,
-          path: request.url
+          path: request_path
         )
       end
 
@@ -138,7 +142,20 @@ module AnyCable
       end
 
       def headers
-        @headers ||= { 'cookie' => request.cookies.map {  |k,v| "#{k}=#{v};"}.join }
+        @headers ||= begin
+          header_names.inject({}) do |acc, name|
+            acc[name] = name == 'cookie' ? cookies_list : request.env[name]
+            acc
+          end
+        end.reject { |_k, v| v.nil? || v.empty? }
+      end
+
+      def header_names
+        ENV['ANYCABLE_HEADERS'] || ['cookie']
+      end
+
+      def cookies_list
+        @cookies_list ||= cookies.map { |k,v| "#{k}=#{v};"}.join
       end
 
       def execute_command(command, identifier, data = '')
