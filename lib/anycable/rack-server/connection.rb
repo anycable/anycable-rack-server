@@ -82,10 +82,6 @@ module AnyCable
         socket.request
       end
 
-      def cookies
-        request.cookies
-      end
-
       def request_path
         request.fullpath
       end
@@ -144,18 +140,15 @@ module AnyCable
       def headers
         @headers ||= begin
           header_names.inject({}) do |acc, name|
-            acc[name] = name == 'cookie' ? cookies_list : request.env[name]
+            header_val = request.env["HTTP_#{name.underscore.upcase}"]
+            acc[name] = header_val if header_val.present?
             acc
           end
-        end.reject { |_k, v| v.nil? || v.empty? }
+        end
       end
 
       def header_names
         ENV['ANYCABLE_HEADERS'] || ['cookie']
-      end
-
-      def cookies_list
-        @cookies_list ||= cookies.map { |k,v| "#{k}=#{v};"}.join
       end
 
       def execute_command(command, identifier, data = '')
