@@ -4,6 +4,7 @@ require 'set'
 require 'json'
 require 'anycable'
 require 'websocket'
+require 'securerandom'
 require 'anycable/rack-server/hub'
 require 'anycable/rack-server/pinger'
 require 'anycable/rack-server/errors'
@@ -14,7 +15,12 @@ require 'anycable/rack-server/coders/json'
 module AnyCable
   module RackServer
     class << self
-      attr_reader :hub, :pinger, :coder, :broadcast_adapter, :middleware
+      attr_reader :broadcast_adapter,
+                  :coder,
+                  :hub,
+                  :middleware,
+                  :pinger,
+                  :server_id
 
       DEFAULT_OPTIONS = {
         rpc_host: 'rpc:50051',
@@ -30,14 +36,16 @@ module AnyCable
         rpc_host = ENV['ANYCABLE_RPC_HOST'] || options[:rpc_host]
         headers  = parse_env_headers || options[:headers]
 
+        @server_id = "anycable-rack-server-#{SecureRandom.hex}"
         @broadcast_adapter = BroadcastAdapters::HubAdapter.new(hub, coder)
         @middleware = Middleware.new(
           nil,
-          pinger:   pinger,
-          hub:      hub,
-          coder:    coder,
-          rpc_host: rpc_host,
-          headers:  headers
+          pinger:    pinger,
+          hub:       hub,
+          coder:     coder,
+          rpc_host:  rpc_host,
+          headers:   headers,
+          server_id: server_id
         )
 
         @_started = true

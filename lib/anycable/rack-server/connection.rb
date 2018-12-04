@@ -11,13 +11,19 @@ module AnyCable
       # rubocop:enable Metrics/LineLength
       include Logging
 
-      attr_reader :coder, :rpc_client, :socket, :hub, :header_names
+      attr_reader :coder,
+                  :header_names,
+                  :hub,
+                  :socket,
+                  :rpc_client,
+                  :server_id
 
-      def initialize(socket, hub, coder, host, header_names)
+      def initialize(socket, hub, coder, host, header_names, server_id)
         @socket       = socket
         @coder        = coder
         @hub          = hub
         @header_names = header_names
+        @server_id    = server_id
 
         @rpc_client = RPC::Client.new(host)
 
@@ -175,7 +181,7 @@ module AnyCable
       end
 
       def log_fmt(msg)
-        "[connection:#{@_identifiers}] #{msg}"
+        "[connection:#{server_id}] #{msg}"
       end
     end
   end
