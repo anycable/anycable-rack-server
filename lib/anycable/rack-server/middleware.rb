@@ -8,13 +8,14 @@ module AnyCable
   module RackServer
     class Middleware
       PROTOCOLS = ['actioncable-v1-json', 'actioncable-unsupported'].freeze
-      attr_reader :pinger, :hub, :coder, :rpc_host
+      attr_reader :pinger, :hub, :coder, :rpc_host, :headers
 
-      def initialize(_app, pinger:, hub:, coder:, rpc_host:)
-        @pinger = pinger
-        @hub = hub
-        @coder = coder
+      def initialize(_app, pinger:, hub:, coder:, rpc_host:, headers:)
+        @pinger   = pinger
+        @hub      = hub
+        @coder    = coder
         @rpc_host = rpc_host
+        @headers  = headers
       end
 
       def call(env)
@@ -60,7 +61,7 @@ module AnyCable
       end
 
       def init_connection(socket)
-        connection = Connection.new(socket, hub, coder, rpc_host)
+        connection = Connection.new(socket, hub, coder, rpc_host, headers)
         socket.onopen { connection.handle_open }
         socket.onclose { connection.handle_close }
         socket.onmessage { |data| connection.handle_command(data) }

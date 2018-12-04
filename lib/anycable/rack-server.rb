@@ -14,21 +14,30 @@ require 'anycable/rack-server/coders/json'
 module AnyCable
   module RackServer
     class << self
-      attr_reader :hub, :pinger, :coder, :broadcast_adapter
+      attr_reader :hub, :pinger, :coder, :broadcast_adapter, :middleware
 
-      def setup!
+      DEFAULT_OPTIONS = {
+        rpc_host: 'rpc:50051',
+        headers:  ['cookie', 'x-api-token']
+      }.freeze
+
+      def start(options = {})
+        options  = DEFAULT_OPTIONS.merge(options)
         @hub     = Hub.new
         @pinger  = Pinger.new
         @coder   = Coders::JSON
 
-        host = ENV['ANYCABLE_RPC_HOST'] || 'localhost:50051'
+        rpc_host = ENV['ANYCABLE_RPC_HOST'] || options[:rpc_host]
+        headers  = parse_env_headers || options[:headers]
+
         @broadcast_adapter = BroadcastAdapters::HubAdapter.new(hub, coder)
-        @_middleware = Middleware.new(
+        @middleware = Middleware.new(
           nil,
           pinger:   pinger,
           hub:      hub,
           coder:    coder,
-          rpc_host: host
+          rpc_host: rpc_host,
+          headers:  headers
         )
 
         @_started = true
@@ -38,31 +47,31 @@ module AnyCable
         @_started == true
       end
 
-      def middleware
-        @middleware ||= begin
-          unless started?
-            msg = 'Run `AnyCable::RackServer.setup!` before using the middleware'
-            raise Errors::MiddlewareSetup, msg
-          end
-          @_middleware
-        end
+      private
+
+      def parse_env_headers
+        headers = ENV['ANYCABLE_HEADERS'].to_s.split(',')
+        return nil if headers.empty?
+        headers
       end
     end
   end
 
   class << self
     def broadcast_adapter
-      return super unless RackServer.started?
+      return super unless AnyCable::RackServer.started?
 
-      RackServer.broadcast_adapter
+      AnyCable::RackServer.broadcast_adapter
     end
   end
 
-  module Rack
-    class << self
-      def call(env)
-        AnyCable::RackServer.middleware.call(env)
-      end
+  class Rack
+    def initialize(_app = nil, options = {})
+      AnyCable::RackServer.start(options)
+    end
+
+    def call(env)
+      AnyCable::RackServer.middleware.call(env)
     end
   end
 end

@@ -1,16 +1,20 @@
 $LOAD_PATH.push File.expand_path('../../../lib', __FILE__)
 require 'anycable-rack-server'
 
-AnyCable::RackServer.setup!
-
 class AnytApp
+  def initialize(app)
+    @app = app
+  end
+
   def call(env)
     request = Rack::Request.new(env)
 
-    return AnyCable::Rack.call(env) if request.path_info =~ /cable/
+    return @app.call(env) if request.path_info =~ /cable/
 
     [200, {'Content-Type' => 'text/html'}, ['Welcome to Anyt::App']]
   end
 end
 
-run AnytApp.new
+options = { rpc_host: 'localhost:50051' }
+ws_server = AnyCable::Rack.new(nil, options)
+run AnytApp.new(ws_server)

@@ -11,16 +11,17 @@ module AnyCable
       # rubocop:enable Metrics/LineLength
       include Logging
 
-      attr_reader :coder, :rpc_client, :socket, :hub
+      attr_reader :coder, :rpc_client, :socket, :hub, :header_names
 
-      def initialize(socket, hub, coder, host)
-        @socket = socket
-        @coder = coder
-        @hub = hub
+      def initialize(socket, hub, coder, host, header_names)
+        @socket       = socket
+        @coder        = coder
+        @hub          = hub
+        @header_names = header_names
 
         @rpc_client = RPC::Client.new(host)
 
-        @_identifiers = '{}'
+        @_identifiers   = '{}'
         @_subscriptions = Set.new
       end
 
@@ -144,10 +145,6 @@ module AnyCable
             acc
           end
         end
-      end
-
-      def header_names
-        ENV['ANYCABLE_HEADERS'] || ['cookie', 'x-api-token']
       end
 
       def execute_command(command, identifier, data = '')
