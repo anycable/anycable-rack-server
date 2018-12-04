@@ -13,15 +13,14 @@ module AnyCable
 
       attr_reader :coder, :rpc_client, :socket, :hub
 
-      def initialize(socket, hub, coder)
+      def initialize(socket, hub, coder, host)
         @socket = socket
         @coder = coder
         @hub = hub
 
-        host = ENV['ANYCABLE_RPC_HOST']
         @rpc_client = RPC::Client.new(host)
 
-        @_identifiers = ''
+        @_identifiers = '{}'
         @_subscriptions = Set.new
       end
 
@@ -33,7 +32,7 @@ module AnyCable
           @_identifiers = response.identifiers
           log(:debug) { log_fmt('Opened') }
         else
-          @_identifiers = ''
+          @_identifiers = '{}'
           log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
           close
         end
@@ -45,7 +44,7 @@ module AnyCable
         log(:debug) { log_fmt('Closed') }
         response = disconnect_rpc
         if response.status == :SUCCESS
-          @_identifiers = ''
+          @_identifiers = '{}'
           @_subscriptions = []
         else
           log(:error, log_fmt("RPC disconnection command failed: #{response.inspect}"))
@@ -140,15 +139,15 @@ module AnyCable
       def headers
         @headers ||= begin
           header_names.inject({}) do |acc, name|
-            header_val = request.env["HTTP_#{name.underscore.upcase}"]
-            acc[name] = header_val if header_val.present?
+            header_val = request.env["HTTP_#{name.gsub(/-/,'_').upcase}"]
+            acc[name]  = header_val unless header_val.nil? || header_val.empty?
             acc
           end
         end
       end
 
       def header_names
-        ENV['ANYCABLE_HEADERS'] || ['cookie']
+        ENV['ANYCABLE_HEADERS'] || ['cookie', 'x-api-token']
       end
 
       def execute_command(command, identifier, data = '')

@@ -6,7 +6,6 @@ module AnyCable
   module RackServer
     class Socket
       include Logging
-      PING = { type: :ping }.to_json.freeze
       attr_reader :version, :active, :socket, :close_on_error
 
       def initialize(env, socket, version)
@@ -121,8 +120,8 @@ module AnyCable
           Thread.current.abort_on_exception = true
           loop do
             sleep 5
-            transmit(PING)
-            # transmit nil, type: :ping
+            time = Time.now.to_i
+            transmit({ message: time, type: :ping }.to_json)
           end
         end
 

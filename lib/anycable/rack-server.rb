@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'set'
+require 'json'
+require 'anycable'
 require 'websocket'
 require 'anycable/rack-server/hub'
 require 'anycable/rack-server/pinger'
@@ -19,8 +21,15 @@ module AnyCable
         @pinger  = Pinger.new
         @coder   = Coders::JSON
 
+        host = ENV['ANYCABLE_RPC_HOST'] || 'localhost:50051'
         @broadcast_adapter = BroadcastAdapters::HubAdapter.new(hub, coder)
-        @_middleware = Middleware.new(nil, pinger, hub, coder)
+        @_middleware = Middleware.new(
+          nil,
+          pinger:   pinger,
+          hub:      hub,
+          coder:    coder,
+          rpc_host: host
+        )
 
         @_started = true
       end
