@@ -8,6 +8,7 @@ module AnyCable
 
       def initialize
         @_sockets = []
+        @_stopped = false
         run
       end
 

@@ -14,6 +14,11 @@ require 'anycable/rack-server/coders/json'
 
 module AnyCable
   module RackServer
+    DEFAULT_OPTIONS = {
+      rpc_host: 'rpc:50051',
+      headers:  ['cookie', 'x-api-token']
+    }.freeze
+
     class << self
       attr_reader :broadcast_adapter,
                   :coder,
@@ -21,11 +26,6 @@ module AnyCable
                   :middleware,
                   :pinger,
                   :server_id
-
-      DEFAULT_OPTIONS = {
-        rpc_host: 'rpc:50051',
-        headers:  ['cookie', 'x-api-token']
-      }.freeze
 
       def start(options = {})
         options  = DEFAULT_OPTIONS.merge(options)
@@ -55,6 +55,10 @@ module AnyCable
         @_started == true
       end
 
+      def stop
+        @_started = false
+      end
+
       private
 
       def parse_env_headers
@@ -66,8 +70,10 @@ module AnyCable
   end
 
   class << self
+    alias_method :original_adapter, :broadcast_adapter
+
     def broadcast_adapter
-      return super unless AnyCable::RackServer.started?
+      return original_adapter unless AnyCable::RackServer.started?
 
       AnyCable::RackServer.broadcast_adapter
     end
