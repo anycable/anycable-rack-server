@@ -28,3 +28,9 @@ Or
 options = { rpc_host: 'localhost:50052', headers: ['cookie'] }
 AnyCable::Rack.new(nil, options)
 ```
+
+## Testing
+
+Run units with `rake`.
+
+Instructions for testing with [anyt](https://github.com/anycable/anyt) (anycable conformance testing) can be found [here](https://github.com/tuwukee/anycable-rack-server/tree/master/test/support).
