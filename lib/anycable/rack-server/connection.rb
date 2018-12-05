@@ -144,7 +144,6 @@ module AnyCable
 
       def process_open(response)
         if response.status == :SUCCESS
-          send_welcome_message
           @_identifiers = response.identifiers
           response.transmissions.each { |transmission| transmit(decode(transmission)) }
           log(:debug) { log_fmt('Opened') }
@@ -180,10 +179,6 @@ module AnyCable
 
       def decode(websocket_message)
         coder.decode(websocket_message)
-      end
-
-      def send_welcome_message
-        transmit(type: :welcome)
       end
 
       def log_fmt(msg)
