@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'anycable', '~> 0.6'
   s.add_dependency 'websocket', '~> 1.2'
+  s.add_dependency 'redis', '~> 4'
 
   s.add_development_dependency 'anyt', '~> 0.8'
   s.add_development_dependency 'minitest', '~> 5.11'

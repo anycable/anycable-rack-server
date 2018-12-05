@@ -9,7 +9,7 @@ require 'anycable/rack-server/hub'
 require 'anycable/rack-server/pinger'
 require 'anycable/rack-server/errors'
 require 'anycable/rack-server/middleware'
-require 'anycable/rack-server/broadcast_adapters/hub_adapter'
+require 'anycable/rack-server/broadcast_subscribers/redis_subscriber'
 require 'anycable/rack-server/coders/json'
 
 module AnyCable
@@ -20,7 +20,7 @@ module AnyCable
     }.freeze
 
     class << self
-      attr_reader :broadcast_adapter,
+      attr_reader :broadcast_subscriber,
                   :coder,
                   :hub,
                   :middleware,
@@ -37,7 +37,6 @@ module AnyCable
         headers  = parse_env_headers || options[:headers]
 
         @server_id = "anycable-rack-server-#{SecureRandom.hex}"
-        @broadcast_adapter = BroadcastAdapters::HubAdapter.new(hub, coder)
         @middleware = Middleware.new(
           nil,
           pinger:    pinger,
@@ -48,6 +47,8 @@ module AnyCable
           server_id: server_id
         )
 
+        broadcast_subscribe
+
         @_started = true
       end
 
@@ -56,26 +57,37 @@ module AnyCable
       end
 
       def stop
+        return unless started?
+
         @_started = false
+        broadcast_subscriber.unsubscribe(@_redis_channel)
+
+        hub.sockets.each do |socket|
+          hub.remove_socket(socket)
+          socket.close
+        end
       end
 
       private
+
+      def broadcast_subscribe
+        @_redis_params  = AnyCable.config.to_redis_params
+        @_redis_channel = AnyCable.config.redis_channel
+
+        @broadcast_subscriber = BroadcastSubscribers::RedisSubscriber.new(
+          hub:     @hub,
+          coder:   @coder,
+          options: @_redis_params
+        )
+
+        @broadcast_subscriber.subscribe(@_redis_channel)
+      end
 
       def parse_env_headers
         headers = ENV['ANYCABLE_HEADERS'].to_s.split(',')
         return nil if headers.empty?
         headers
       end
-    end
-  end
-
-  class << self
-    alias_method :original_adapter, :broadcast_adapter
-
-    def broadcast_adapter
-      return original_adapter unless AnyCable::RackServer.started?
-
-      AnyCable::RackServer.broadcast_adapter
     end
   end
 

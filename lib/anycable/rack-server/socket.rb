@@ -6,25 +6,19 @@ module AnyCable
   module RackServer
     class Socket
       include Logging
-      attr_reader :version, :active, :socket, :close_on_error
+      attr_reader :version, :socket
 
       def initialize(env, socket, version)
         log(:debug, "WebSocket version #{version}")
         @env = env
         @socket = socket
         @version = version
-        @active = true
 
         @_open_handlers    = []
         @_message_handlers = []
         @_close_handlers   = []
         @_error_handlers   = []
-
-        @close_on_error = true
-      end
-
-      def prevent_close_on_error
-        @close_on_error = false
+        @_active           = true
       end
 
       def transmit(data, type: :text)
@@ -73,7 +67,7 @@ module AnyCable
                 rescue => e # rubocop: disable Style/RescueStandardError
                   log(:error, "Socket receive failed: #{e}")
                   @_error_handlers.each { |eh| eh.call(e, data) }
-                  close if close_on_error
+                  close
                 end
               end
             end
@@ -85,22 +79,22 @@ module AnyCable
       # rubocop: enable Metrics/MethodLength
 
       def close
-        return unless @active
+        return unless @_active
 
         @_close_handlers.each(&:call)
         close!
 
-        @active = false
+        @_active = false
       end
 
       def closed?
-        @socket.closed?
+        socket.closed?
       end
 
       private
 
       def close!
-        if @socket.respond_to?(:closed?)
+        if socket.respond_to?(:closed?)
           close_socket unless @socket.closed?
         else
           close_socket
@@ -109,8 +103,8 @@ module AnyCable
 
       def close_socket
         frame = WebSocket::Frame::Outgoing::Server.new(version: version, type: :close, code: 1000)
-        @socket.write(frame.to_s) if frame.supported?
-        @socket.close
+        socket.write(frame.to_s) if frame.supported?
+        socket.close
       rescue IOError, Errno::EPIPE, Errno::ETIMEDOUT # rubocop:disable Lint/HandleExceptions
         # already closed
       end
