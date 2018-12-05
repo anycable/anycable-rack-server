@@ -14,7 +14,7 @@ end
 
 ## Settings
 
-Customizable options: gRPC server host and request headers to be passed to the gRPC server.
+Customizable options: gRPC server host and headers being sent with each gRPC request.
 
 Can be specified via env variables
 ```

@@ -31,32 +31,15 @@ module AnyCable
         @_subscriptions = Set.new
       end
 
-      # TODO: refactor, add separate response handlers for major message types
       def handle_open
-        response = connect_rpc
-        if response.status == :SUCCESS
-          send_welcome_message
-          @_identifiers = response.identifiers
-          log(:debug) { log_fmt('Opened') }
-        else
-          @_identifiers = '{}'
-          log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
-          close
-        end
-        response.transmissions.each { |transmission| transmit(decode(transmission)) }
+        response = rpc_connect
+        process_open(response)
       end
 
       def handle_close
-        disconnect!
-        log(:debug) { log_fmt('Closed') }
-        response = disconnect_rpc
-        if response.status == :SUCCESS
-          @_identifiers = '{}'
-          @_subscriptions = []
-        else
-          log(:error, log_fmt("RPC disconnection command failed: #{response.inspect}"))
-        end
-        hub.remove_socket(socket)
+        response = rpc_disconnect
+        process_close(response)
+        reset_connection
       end
 
       def handle_command(websocket_message)
@@ -74,8 +57,9 @@ module AnyCable
         end
       end
 
+      private
+
       def transmit(cable_message)
-        return if disconnected?
         socket.transmit(encode(cable_message))
       end
 
@@ -83,7 +67,6 @@ module AnyCable
         socket.close
       end
 
-      # Rack::Request instance of underlying socket
       def request
         socket.request
       end
@@ -92,21 +75,11 @@ module AnyCable
         request.fullpath
       end
 
-      def disconnected?
-        @_disconnected == true
-      end
-
-      private
-
-      def disconnect!
-        @_disconnected = true
-      end
-
-      def connect_rpc
+      def rpc_connect
         rpc_client.connect(headers: headers, path: request_path)
       end
 
-      def disconnect_rpc
+      def rpc_disconnect
         rpc_client.disconnect(
           identifiers: @_identifiers,
           subscriptions: @_subscriptions.to_a,
@@ -115,32 +88,41 @@ module AnyCable
         )
       end
 
+      def rpc_command(command, identifier, data = '')
+        rpc_client.command(
+          command: command,
+          identifier: identifier,
+          connection_identifiers: @_identifiers,
+          data: data
+        )
+      end
+
       def subscribe(identifier)
-        response = execute_command('subscribe', identifier)
+        response = rpc_command('subscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.add(identifier)
         else
-          log(:error, log_fmt("RPC subscribe command failed: #{response.inspect}"))
+          log(:debug, log_fmt("RPC subscribe command failed: #{response.inspect}"))
         end
-        process_result(response, identifier)
-      end
-
-      def send_message(identifier, data)
-        response = execute_command('message', identifier, data)
-        unless response.status == :SUCCESS
-          log(:error, log_fmt("RPC message command failed: #{response.inspect}"))
-        end
-        process_result(response, identifier)
+        process_command(response, identifier)
       end
 
       def unsubscribe(identifier)
-        response = execute_command('unsubscribe', identifier)
+        response = rpc_command('unsubscribe', identifier)
         if response.status == :SUCCESS
           @_subscriptions.delete(identifier)
         else
-          log(:error, log_fmt("RPC unsubscribe command failed: #{response.inspect}"))
+          log(:debug, log_fmt("RPC unsubscribe command failed: #{response.inspect}"))
         end
-        process_result(response, identifier)
+        process_command(response, identifier)
+      end
+
+      def send_message(identifier, data)
+        response = rpc_command('message', identifier, data)
+        unless response.status == :SUCCESS
+          log(:debug, log_fmt("RPC message command failed: #{response.inspect}"))
+        end
+        process_command(response, identifier)
       end
 
       def headers
@@ -153,19 +135,43 @@ module AnyCable
         end
       end
 
-      def execute_command(command, identifier, data = '')
-        rpc_client.command(
-          command: command,
-          identifier: identifier,
-          connection_identifiers: @_identifiers,
-          data: data
-        )
-      end
-
-      def process_result(response, identifier)
+      def process_command(response, identifier)
         response.transmissions.each { |transmission| transmit(decode(transmission)) }
         hub.remove_channel(socket, identifier) if response.stop_streams
         response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
+        close_connection if response.disconnect
+      end
+
+      def process_open(response)
+        if response.status == :SUCCESS
+          send_welcome_message
+          @_identifiers = response.identifiers
+          response.transmissions.each { |transmission| transmit(decode(transmission)) }
+          log(:debug) { log_fmt('Opened') }
+        else
+          log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
+          close_connection
+        end
+      end
+
+      def process_close(response)
+        if response.status == :SUCCESS
+          log(:debug) { log_fmt('Closed') }
+        else
+          log(:error, log_fmt("RPC disconnection command failed: #{response.inspect}"))
+        end
+      end
+
+      def reset_connection
+        @_identifiers = '{}'
+        @_subscriptions = []
+
+        hub.remove_socket(socket)
+      end
+
+      def close_connection
+        reset_connection
+        close
       end
 
       def encode(cable_message)
