@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'minitest/autorun'
-require 'anycable/broadcast_adapters/redis'
 require 'anycable-rack-server'
+require 'anycable/broadcast_adapters/redis'
 
 class TestRackServer < Minitest::Test
   INSTANCE_VARIABLES = [
@@ -12,11 +12,12 @@ class TestRackServer < Minitest::Test
     :@middleware,
     :@pinger,
     :@server_id
-  ]
+  ].freeze
 
   def teardown
     INSTANCE_VARIABLES.each do |attr_name|
-      AnyCable::RackServer.remove_instance_variable(attr_name) if AnyCable::RackServer.instance_variable_defined?(attr_name)
+      next unless AnyCable::RackServer.instance_variable_defined?(attr_name)
+      AnyCable::RackServer.remove_instance_variable(attr_name)
     end
     AnyCable::RackServer.stop
   end
