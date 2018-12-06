@@ -61,6 +61,7 @@ module AnyCable
 
         @_started = false
         broadcast_subscriber.unsubscribe(@_redis_channel)
+        pinger.stop
 
         hub.sockets.each do |socket|
           hub.remove_socket(socket)

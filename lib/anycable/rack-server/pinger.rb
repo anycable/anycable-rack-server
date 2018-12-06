@@ -27,7 +27,6 @@ module AnyCable
       # rubocop: disable Metrics/MethodLength
       def run
         Thread.new do
-          Thread.current.abort_on_exception = true
           loop do
             break if @_stopped
 

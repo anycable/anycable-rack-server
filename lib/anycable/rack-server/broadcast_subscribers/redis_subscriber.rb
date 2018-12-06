@@ -6,17 +6,17 @@ module AnyCable
   module RackServer
     module BroadcastSubscribers
       class RedisSubscriber
-        attr_reader :hub, :coder, :redis_conn
+        attr_reader :hub, :coder, :redis_conn, :threads
 
         def initialize(hub:, coder:, options:)
           @hub        = hub
           @coder      = coder
           @redis_conn = ::Redis.new(options)
-          @_threads   = []
+          @threads    = {}
         end
 
         def subscribe(channel)
-          Thread.new do
+          @threads[channel] = Thread.new do
             redis_conn.subscribe(channel) do |on|
               on.message { |_channel, msg|  handle_message(msg) }
             end
@@ -24,7 +24,8 @@ module AnyCable
         end
 
         def unsubscribe(channel)
-          redis_conn.unsubscribe(channel) if redis_conn.subscribed?
+          @threads[channel].terminate unless @threads[channel].nil?
+          @threads.delete(channel)
         end
 
         private
