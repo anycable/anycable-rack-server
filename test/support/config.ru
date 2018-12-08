@@ -15,6 +15,5 @@ class AnytApp
   end
 end
 
-options = { rpc_host: 'localhost:50051' }
-ws_server = AnyCable::Rack.new(nil, options)
+ws_server = AnyCable::Rack.new
 run AnytApp.new(ws_server)

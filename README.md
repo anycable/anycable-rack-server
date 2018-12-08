@@ -14,19 +14,19 @@ end
 
 ## Settings
 
-Customizable options: gRPC server host and headers being sent with each gRPC request.
-The gem uses redis settings specified in AnyCable config.
+Customizable options: headers being sent with each gRPC request. The gem uses AnyCable config for redis and gRPC host settings.
 
-Can be specified via env variables
+Default headers: `'cookie', 'x-api-token'`.
+
+Can be specified via env variable
 ```
-ANYCABLE_RPC_HOST=rpc:50051
 ANYCABLE_HEADERS=cookie,x-api-token,origin
 ```
 
 Or
 
 ```ruby
-options = { rpc_host: 'localhost:50052', headers: ['cookie', 'origin'] }
+options = { headers: ['cookie', 'origin'] }
 AnyCable::Rack.new(nil, options)
 ```
 

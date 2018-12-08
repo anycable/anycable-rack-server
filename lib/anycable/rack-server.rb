@@ -15,7 +15,6 @@ require 'anycable/rack-server/coders/json'
 module AnyCable
   module RackServer
     DEFAULT_OPTIONS = {
-      rpc_host: 'rpc:50051',
       headers:  ['cookie', 'x-api-token']
     }.freeze
 
@@ -33,7 +32,7 @@ module AnyCable
         @pinger  = Pinger.new
         @coder   = Coders::JSON
 
-        rpc_host = ENV['ANYCABLE_RPC_HOST'] || options[:rpc_host]
+        rpc_host = unpack_host(AnyCable.config.rpc_host)
         headers  = parse_env_headers || options[:headers]
 
         @server_id = "anycable-rack-server-#{SecureRandom.hex}"
@@ -88,6 +87,10 @@ module AnyCable
         headers = ENV['ANYCABLE_HEADERS'].to_s.split(',')
         return nil if headers.empty?
         headers
+      end
+
+      def unpack_host(str)
+        str.gsub('[::]', '0.0.0.0')
       end
     end
   end
