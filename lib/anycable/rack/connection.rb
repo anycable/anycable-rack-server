@@ -1,33 +1,35 @@
 # frozen_string_literal: true
 
-require 'anycable/rack-server/rpc/client'
-require 'anycable/rack-server/logging'
-require 'anycable/rack-server/errors'
+require "nanoid"
+require "set"
+require "json"
+
+require "anycable/rack/rpc/client"
+require "anycable/rack/logging"
+require "anycable/rack/errors"
 
 module AnyCable
-  # rubocop:disable Metrics/LineLength
-  module RackServer
-    class Connection
-      # rubocop:enable Metrics/LineLength
+  module Rack
+    class Connection # :nodoc:
       include Logging
 
       attr_reader :coder,
-                  :header_names,
+                  :headers,
                   :hub,
                   :socket,
                   :rpc_client,
-                  :server_id
+                  :sid
 
-      def initialize(socket, hub, coder, host, header_names, server_id)
-        @socket       = socket
-        @coder        = coder
-        @hub          = hub
-        @header_names = header_names
-        @server_id    = server_id
+      def initialize(socket, hub:, coder:, rpc_host:, headers:)
+        @socket = socket
+        @coder = coder
+        @headers = headers
+        @hub = hub
+        @sid = Nanoid.generate(size: 10)
 
-        @rpc_client = RPC::Client.new(host)
+        @rpc_client = RPC::Client.new(rpc_host)
 
-        @_identifiers   = '{}'
+        @_identifiers   = "{}"
         @_subscriptions = Set.new
       end
 
@@ -44,17 +46,21 @@ module AnyCable
 
       def handle_command(websocket_message)
         decoded = decode(websocket_message)
-        command = decoded.delete('command')
+        command = decoded.delete("command")
 
-        channel_identifier = decoded['identifier']
+        channel_identifier = decoded["identifier"]
+
+        log(:debug) { "Command: #{decoded}" }
 
         case command
-        when 'subscribe'   then subscribe(channel_identifier)
-        when 'unsubscribe' then unsubscribe(channel_identifier)
-        when 'message'     then send_message(channel_identifier, decoded['data'])
+        when "subscribe"   then subscribe(channel_identifier)
+        when "unsubscribe" then unsubscribe(channel_identifier)
+        when "message"     then send_message(channel_identifier, decoded["data"])
         else
-          raise Errors::UnknownCommand, "Command not found #{command}"
+          log(:error, "Command not found #{command}")
         end
+      rescue Exception => e
+        log(:error, "Failed to execute command #{command}: #{e.message}")
       end
 
       private
@@ -88,7 +94,7 @@ module AnyCable
         )
       end
 
-      def rpc_command(command, identifier, data = '')
+      def rpc_command(command, identifier, data = "")
         rpc_client.command(
           command: command,
           identifier: identifier,
@@ -98,41 +104,29 @@ module AnyCable
       end
 
       def subscribe(identifier)
-        response = rpc_command('subscribe', identifier)
+        response = rpc_command("subscribe", identifier)
         if response.status == :SUCCESS
           @_subscriptions.add(identifier)
-        else
-          log(:debug, log_fmt("RPC subscribe command failed: #{response.inspect}"))
+        elsif response.status == :ERROR
+          log(:error, "RPC subscribe command failed: #{response.inspect}")
         end
         process_command(response, identifier)
       end
 
       def unsubscribe(identifier)
-        response = rpc_command('unsubscribe', identifier)
+        response = rpc_command("unsubscribe", identifier)
         if response.status == :SUCCESS
           @_subscriptions.delete(identifier)
-        else
-          log(:debug, log_fmt("RPC unsubscribe command failed: #{response.inspect}"))
+        elsif response.status == :ERROR
+          log(:error, "RPC unsubscribe command failed: #{response.inspect}")
         end
         process_command(response, identifier)
       end
 
       def send_message(identifier, data)
-        response = rpc_command('message', identifier, data)
-        unless response.status == :SUCCESS
-          log(:debug, log_fmt("RPC message command failed: #{response.inspect}"))
-        end
+        response = rpc_command("message", identifier, data)
+        log(:error, "RPC message command failed: #{response.inspect}") if response.status == :ERROR
         process_command(response, identifier)
-      end
-
-      def headers
-        @headers ||= begin
-          header_names.inject({}) do |acc, name|
-            header_val = request.env["HTTP_#{name.gsub(/-/,'_').upcase}"]
-            acc[name]  = header_val unless header_val.nil? || header_val.empty?
-            acc
-          end
-        end
       end
 
       def process_command(response, identifier)
@@ -146,23 +140,23 @@ module AnyCable
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
           response.transmissions.each { |transmission| transmit(decode(transmission)) }
-          log(:debug) { log_fmt('Opened') }
+          log(:debug) { "Opened" }
         else
-          log(:error, log_fmt("RPC connection command failed: #{response.inspect}"))
+          log(:error, "RPC connection command failed: #{response.inspect}")
           close_connection
         end
       end
 
       def process_close(response)
         if response.status == :SUCCESS
-          log(:debug) { log_fmt('Closed') }
+          log(:debug) { "Closed" }
         else
-          log(:error, log_fmt("RPC disconnection command failed: #{response.inspect}"))
+          log(:error, "RPC disconnection command failed: #{response.inspect}")
         end
       end
 
       def reset_connection
-        @_identifiers = '{}'
+        @_identifiers = "{}"
         @_subscriptions = []
 
         hub.remove_socket(socket)
@@ -181,8 +175,12 @@ module AnyCable
         coder.decode(websocket_message)
       end
 
+      def log(level, msg = nil)
+        super(level, msg ? log_fmt(msg) : nil) { log_fmt(yield) }
+      end
+
       def log_fmt(msg)
-        "[connection:#{server_id}] #{msg}"
+        "[sid=#{sid}] #{msg}"
       end
     end
   end

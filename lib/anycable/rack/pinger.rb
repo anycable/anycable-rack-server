@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require "json"
+
 module AnyCable
-  module RackServer
+  module Rack
     # Sends pings to sockets
     class Pinger
       INTERVAL = 3
@@ -9,7 +11,6 @@ module AnyCable
       def initialize
         @_sockets = []
         @_stopped = false
-        run
       end
 
       def add(socket)
@@ -24,7 +25,6 @@ module AnyCable
         @_stopped = true
       end
 
-      # rubocop: disable Metrics/MethodLength
       def run
         Thread.new do
           loop do
@@ -41,7 +41,6 @@ module AnyCable
           end
         end
       end
-      # rubocop: enable Metrics/MethodLength
 
       private
 

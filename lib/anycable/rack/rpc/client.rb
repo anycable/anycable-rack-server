@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-require 'grpc'
+require "grpc"
 
 module AnyCable
-  module RackServer
+  module Rack
     module RPC
+      # AnyCable RPC client
       class Client
         attr_reader :stub
 

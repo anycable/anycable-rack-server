@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module AnyCable
-  module RackServer
+  module Rack
     module Logging # :nodoc:
-      PREFIX = 'AnycableRackServer'
+      PREFIX = "AnyCableRackServer"
 
       private
 

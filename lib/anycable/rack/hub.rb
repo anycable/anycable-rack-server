@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require "set"
+
 module AnyCable
-  module RackServer
+  module Rack
     # From https://github.com/rails/rails/blob/v5.0.1/actioncable/lib/action_cable/subscription_adapter/subscriber_map.rb
     class Hub
       attr_reader :streams, :sockets
@@ -64,6 +66,13 @@ module AnyCable
           decoded = coder.decode(message)
           cmessage = channel_message(channel_id, decoded, coder)
           sockets.each { |socket| socket.transmit(cmessage) }
+        end
+      end
+
+      def close_all
+        hub.sockets.dup.each do |socket|
+          hub.remove_socket(socket)
+          socket.close
         end
       end
 

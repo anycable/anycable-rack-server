@@ -1,0 +1,64 @@
+AllCops:
+  # Include gemspec and Rakefile
+  Include:
+    - 'lib/**/*.rb'
+    - 'lib/**/*.rake'
+    - 'test/**/*.rb'
+    - 'test/**/*.ru'
+  Exclude:
+    - 'bin/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+    - 'gemfiles/**/*'
+  DisplayCopNames: true
+  StyleGuideCopsOnly: false
+  TargetRubyVersion: 2.4
+
+Rails:
+  Enabled: false
+
+Style/Documentation:
+  Exclude:
+    - 'test/**/*'
+
+Style/StringLiterals: 
+  EnforcedStyle: double_quotes
+
+Style/AccessModifierDeclarations:
+  Enabled: false
+
+Layout/SpaceInsideStringInterpolation:
+  EnforcedStyle: no_space
+
+Lint/RescueException:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Lint/HandleExceptions:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 100
+  Exclude:
+    - 'test/**/*'
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Naming/FileName:
+  Exclude:
+    - 'lib/anycable-rack-server.rb'
