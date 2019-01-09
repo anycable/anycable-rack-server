@@ -10,6 +10,7 @@ module AnyCable
         attr_config mount_path: "/cable",
                     headers: AnyCable::Rack::Server::DEFAULT_HEADERS,
                     rpc_port: 50_051,
+                    rpc_host: "localhost",
                     run_rpc: false,
                     running_rpc: false
 
@@ -27,7 +28,7 @@ module AnyCable
 
           server = AnyCable::Rack::Server.new(
             headers: config.headers,
-            rpc_host: "localhost:#{config.rpc_port}"
+            rpc_host: "#{config.rpc_host}:#{config.rpc_port}"
           )
 
           app.routes.draw do

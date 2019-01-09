@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "nanoid"
+require "securerandom"
 require "set"
 require "json"
 
@@ -25,7 +25,7 @@ module AnyCable
         @coder = coder
         @headers = headers
         @hub = hub
-        @sid = Nanoid.generate(size: 10)
+        @sid = SecureRandom.hex(6)
 
         @rpc_client = RPC::Client.new(rpc_host)
 

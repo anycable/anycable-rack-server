@@ -3,7 +3,6 @@ PATH
   specs:
     anycable-rack-server (0.1.0)
       anycable (~> 0.6)
-      nanoid (~> 2.0)
       redis (~> 4)
       websocket (~> 1.2)
 
@@ -106,7 +105,6 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
-    nanoid (2.0.0)
     nio4r (2.3.1)
     nokogiri (1.10.0)
       mini_portile2 (~> 2.4.0)
