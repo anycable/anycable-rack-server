@@ -17,9 +17,11 @@ module AnyCable
         private :running_rpc=
       end
 
-      config.any_cable_rack = Config.new
+      config.before_configuration do
+        config.any_cable_rack = Config.new
+      end
 
-      initializer "anycable.rack.mount" do
+      initializer "anycable.rack.mount", after: "action_cable.routes" do
         config.after_initialize do |app|
           config = app.config.any_cable_rack
 
@@ -31,7 +33,7 @@ module AnyCable
             rpc_host: "#{config.rpc_host}:#{config.rpc_port}"
           )
 
-          app.routes.draw do
+          app.routes.prepend do
             mount server => config.mount_path
           end
 

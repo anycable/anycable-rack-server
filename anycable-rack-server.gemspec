@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'websocket', '~> 1.2'
   s.add_dependency 'redis', '~> 4'
 
-  s.add_development_dependency 'anyt', '~> 0.8'
+  s.add_development_dependency 'anyt', '~> 0.8.4'
   s.add_development_dependency 'minitest', '~> 5.10'
   s.add_development_dependency 'puma'
   s.add_development_dependency 'rake', '~> 12.3'

@@ -25,6 +25,6 @@ namespace :anyt do
   end
 end
 
-task anyt: ["anyt:rack"]
+task anyt: ["anyt:rack", "anyt:rails"]
 
 task default: [:rubocop, :test, :anyt]
