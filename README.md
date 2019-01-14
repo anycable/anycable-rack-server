@@ -1,3 +1,4 @@
+[![Cult Of Martians](http://cultofmartians.com/assets/badges/badge.svg)](https://cultofmartians.com/tasks/anycable-ruby-server.html)
 [![Gem Version](https://badge.fury.io/rb/anycable-rack-server.svg)](https://rubygems.org/gems/anycable-rack-server) [![Build Status](https://travis-ci.org/anycable/anycable-rack-server.svg?branch=master)](https://travis-ci.org/anycable/anycable-rack-server)
 
 # anycable-rack-server
