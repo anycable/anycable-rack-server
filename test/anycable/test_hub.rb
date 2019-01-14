@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'minitest/autorun'
-require 'anycable-rack-server'
-require 'securerandom'
-require 'set'
+require "minitest/autorun"
+require "anycable-rack-server"
+require "securerandom"
+require "set"
 
 class TestHub < Minitest::Test
   attr_reader :coder,
@@ -13,11 +13,11 @@ class TestHub < Minitest::Test
               :stream
 
   def setup
-    @coder   = AnyCable::RackServer::Coders::JSON
-    @hub     = AnyCable::RackServer::Hub.new
-    @channel = 'channel'
+    @coder   = AnyCable::Rack::Coders::JSON
+    @hub     = AnyCable::Rack::Hub.new
+    @channel = "channel"
     @msg     = { data: :test }.to_json
-    @stream  = 'stream'
+    @stream  = "stream"
   end
 
   def test_add_subscriber
@@ -88,7 +88,7 @@ class TestHub < Minitest::Test
 
   def test_remove_channel_multiple_channels
     setup_helper_data
-    channel2 = 'channel2'
+    channel2 = "channel2"
 
     hub.add_subscriber(stream, @socket, channel)
     hub.add_subscriber(stream, @socket, channel2)
@@ -113,7 +113,7 @@ class TestHub < Minitest::Test
 
   def test_remove_socket_multiple_streams_and_channels
     setup_helper_data
-    channel2 = 'channel2'
+    channel2 = "channel2"
 
     hub.add_subscriber(stream, @socket, channel)
     hub.add_subscriber(@stream2, @socket, channel)
@@ -128,8 +128,8 @@ class TestHub < Minitest::Test
   private
 
   def setup_helper_data
-    @socket = 'mock'
-    @stream2 = 'stream2'
+    @socket = "mock"
+    @stream2 = "stream2"
     @set = Set.new
     @set << @socket
   end

@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'anycable/rack-server/logging'
+require "anycable/rack/logging"
 
 module AnyCable
-  module RackServer
+  module Rack
+    # Socket wrapper
     class Socket
       include Logging
       attr_reader :version, :socket
@@ -34,7 +35,7 @@ module AnyCable
       end
 
       def request
-        @_request ||= ::Rack::Request.new(@env)
+        @request ||= ::Rack::Request.new(@env)
       end
 
       def onopen(&block)
@@ -53,7 +54,6 @@ module AnyCable
         @_error_handlers << block
       end
 
-      # rubocop: disable Metrics/MethodLength
       def listen
         keepalive
         Thread.new do
@@ -76,7 +76,6 @@ module AnyCable
           end
         end
       end
-      # rubocop: enable Metrics/MethodLength
 
       def close
         return unless @_active
@@ -105,7 +104,7 @@ module AnyCable
         frame = WebSocket::Frame::Outgoing::Server.new(version: version, type: :close, code: 1000)
         socket.write(frame.to_s) if frame.supported?
         socket.close
-      rescue IOError, Errno::EPIPE, Errno::ETIMEDOUT # rubocop:disable Lint/HandleExceptions
+      rescue IOError, Errno::EPIPE, Errno::ETIMEDOUT
         # already closed
       end
 
@@ -124,17 +123,14 @@ module AnyCable
         end
       end
 
-      # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Metrics/CyclomaticComplexity
-      # rubocop:disable Metrics/PerceivedComplexity
-      # rubocop:disable Metrics/MethodLength
       def each_frame
         framebuffer = WebSocket::Frame::Incoming::Server.new(version: version)
         while IO.select([socket])
           if socket.respond_to?(:recvfrom)
             data, _addrinfo = socket.recvfrom(2000)
           else
-            data, _addrinfo = socket.readpartial(2000), socket.peeraddr
+            data = socket.readpartial(2000)
+            _addrinfo = socket.peeraddr
           end
 
           break if data.empty?

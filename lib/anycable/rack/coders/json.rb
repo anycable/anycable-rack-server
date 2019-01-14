@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
+require "json"
+
 module AnyCable
-  module RackServer
+  module Rack
     module Coders
-      module JSON
+      module JSON # :nodoc:
         class << self
           def decode(json_str)
             ::JSON.parse(json_str)
