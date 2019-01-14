@@ -57,7 +57,7 @@ module AnyCable
       def listen
         keepalive
         Thread.new do
-          Thread.current.abort_on_exception = true
+          Thread.current.report_on_exception = true
           begin
             @_open_handlers.each(&:call)
             each_frame do |data|
