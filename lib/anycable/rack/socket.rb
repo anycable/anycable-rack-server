@@ -113,8 +113,7 @@ module AnyCable
           Thread.current.abort_on_exception = true
           loop do
             sleep 5
-            time = Time.now.to_i
-            transmit({ message: time, type: :ping }.to_json)
+            transmit nil, type: :ping
           end
         end
 
