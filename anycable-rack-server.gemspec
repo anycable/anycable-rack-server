@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency 'anycable', '~> 0.6'
+  s.add_dependency "anyway_config", "~> 1.4.2"
   s.add_dependency 'websocket', '~> 1.2'
   s.add_dependency 'redis', '~> 4'
 

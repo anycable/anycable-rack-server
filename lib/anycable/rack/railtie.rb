@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "anyway_config"
+
 module AnyCable
   module Rack
     class Railtie < ::Rails::Railtie # :nodoc: all
