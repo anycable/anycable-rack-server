@@ -19,7 +19,7 @@ app = Rack::Builder.new do
   end
 end
 
-# NOTE: don't forget to call `start!` method 
+# NOTE: don't forget to call `start!` method
 ws_server.start!
 
 run app

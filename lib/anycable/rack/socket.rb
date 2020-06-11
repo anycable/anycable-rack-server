@@ -15,11 +15,11 @@ module AnyCable
         @socket = socket
         @version = version
 
-        @_open_handlers    = []
+        @_open_handlers = []
         @_message_handlers = []
-        @_close_handlers   = []
-        @_error_handlers   = []
-        @_active           = true
+        @_close_handlers = []
+        @_error_handlers = []
+        @_active = true
       end
 
       def transmit(data, type: :text)
@@ -62,13 +62,11 @@ module AnyCable
             @_open_handlers.each(&:call)
             each_frame do |data|
               @_message_handlers.each do |handler|
-                begin
-                  handler.call(data)
-                rescue => e # rubocop: disable Style/RescueStandardError
-                  log(:error, "Socket receive failed: #{e}")
-                  @_error_handlers.each { |eh| eh.call(e, data) }
-                  close
-                end
+                handler.call(data)
+              rescue => e # rubocop: disable Style/RescueStandardError
+                log(:error, "Socket receive failed: #{e}")
+                @_error_handlers.each { |eh| eh.call(e, data) }
+                close
               end
             end
           ensure
@@ -136,7 +134,7 @@ module AnyCable
 
           framebuffer << data
 
-          while frame = framebuffer.next
+          while frame = framebuffer.next # rubocop:disable Lint/AssignmentInCondition
             case frame.type
             when :close
               return

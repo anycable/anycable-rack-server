@@ -11,10 +11,10 @@ module AnyCable
         attr_reader :hub, :coder, :redis_conn, :threads
 
         def initialize(hub:, coder:, **options)
-          @hub        = hub
-          @coder      = coder
+          @hub = hub
+          @coder = coder
           @redis_conn = ::Redis.new(options)
-          @threads    = {}
+          @threads = {}
         end
 
         def subscribe(channel)

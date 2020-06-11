@@ -7,17 +7,17 @@ require "set"
 
 class TestHub < Minitest::Test
   attr_reader :coder,
-              :hub,
-              :channel,
-              :msg,
-              :stream
+    :hub,
+    :channel,
+    :msg,
+    :stream
 
   def setup
-    @coder   = AnyCable::Rack::Coders::JSON
-    @hub     = AnyCable::Rack::Hub.new
+    @coder = AnyCable::Rack::Coders::JSON
+    @hub = AnyCable::Rack::Hub.new
     @channel = "channel"
-    @msg     = { data: :test }.to_json
-    @stream  = "stream"
+    @msg = {data: :test}.to_json
+    @stream = "stream"
   end
 
   def test_add_subscriber
@@ -26,13 +26,13 @@ class TestHub < Minitest::Test
 
     assert_equal [@socket], hub.sockets.keys
     assert_equal [stream], hub.streams.keys
-    assert_equal [{ channel => @set }], hub.streams.values
+    assert_equal [{channel => @set}], hub.streams.values
   end
 
   def test_broadcast
     socket = Minitest::Mock.new
     3.times { socket.expect(:hash, SecureRandom.hex.to_i) }
-    socket.expect(:transmit, true, [{ identifier: channel, message: coder.decode(msg) }.to_json])
+    socket.expect(:transmit, true, [{identifier: channel, message: coder.decode(msg)}.to_json])
     hub.add_subscriber(stream, socket, channel)
     hub.broadcast(stream, msg, coder)
 
@@ -59,7 +59,7 @@ class TestHub < Minitest::Test
 
     assert_equal [@socket], hub.sockets.keys
     assert_equal [@stream2], hub.streams.keys
-    assert_equal [{ channel => @set }], hub.streams.values
+    assert_equal [{channel => @set}], hub.streams.values
   end
 
   def test_remove_channel
@@ -96,7 +96,7 @@ class TestHub < Minitest::Test
 
     assert_equal [@socket], hub.sockets.keys
     assert_equal [stream], hub.streams.keys
-    assert_equal [{ channel2 => @set }], hub.streams.values
+    assert_equal [{channel2 => @set}], hub.streams.values
   end
 
   def test_remove_socket

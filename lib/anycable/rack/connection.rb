@@ -14,11 +14,11 @@ module AnyCable
       include Logging
 
       attr_reader :coder,
-                  :headers,
-                  :hub,
-                  :socket,
-                  :rpc_client,
-                  :sid
+        :headers,
+        :hub,
+        :socket,
+        :rpc_client,
+        :sid
 
       def initialize(socket, hub:, coder:, rpc_host:, headers:)
         @socket = socket
@@ -29,7 +29,7 @@ module AnyCable
 
         @rpc_client = RPC::Client.new(rpc_host)
 
-        @_identifiers   = "{}"
+        @_identifiers = "{}"
         @_subscriptions = Set.new
       end
 
@@ -53,13 +53,13 @@ module AnyCable
         log(:debug) { "Command: #{decoded}" }
 
         case command
-        when "subscribe"   then subscribe(channel_identifier)
+        when "subscribe" then subscribe(channel_identifier)
         when "unsubscribe" then unsubscribe(channel_identifier)
-        when "message"     then send_message(channel_identifier, decoded["data"])
+        when "message" then send_message(channel_identifier, decoded["data"])
         else
           log(:error, "Command not found #{command}")
         end
-      rescue Exception => e
+      rescue Exception => e # rubocop:disable Lint/RescueException
         log(:error, "Failed to execute command #{command}: #{e.message}")
       end
 

@@ -19,13 +19,13 @@ module AnyCable # :nodoc: all
       DEFAULT_HEADERS = %w[cookie x-api-token].freeze
 
       attr_reader :broadcast,
-                  :coder,
-                  :hub,
-                  :middleware,
-                  :pinger,
-                  :pubsub_channel,
-                  :rpc_host,
-                  :headers
+        :coder,
+        :hub,
+        :middleware,
+        :pinger,
+        :pubsub_channel,
+        :rpc_host,
+        :headers
 
       def initialize(*args)
         options = args.last.is_a?(Hash) ? args.last : {}
@@ -86,7 +86,7 @@ module AnyCable # :nodoc: all
       end
 
       def inspect
-        "#<AnyCable::Rack::Server(rpc_host: #{rpc_host}, headers: [#{headers.join(', ')}])>"
+        "#<AnyCable::Rack::Server(rpc_host: #{rpc_host}, headers: [#{headers.join(", ")}])>"
       end
     end
   end

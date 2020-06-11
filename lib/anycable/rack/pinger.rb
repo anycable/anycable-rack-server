@@ -45,7 +45,7 @@ module AnyCable
       private
 
       def ping_message(time)
-        { type: :ping, message: time }.to_json
+        {type: :ping, message: time}.to_json
       end
     end
   end
