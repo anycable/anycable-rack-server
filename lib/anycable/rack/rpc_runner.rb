@@ -19,7 +19,7 @@ module AnyCable
 
           command_args << "--rpc-host=\"#{rpc_host}\""
 
-          command = "bundle exec anycable #{command_args.join(' ')}"
+          command = "bundle exec anycable #{command_args.join(" ")}"
 
           log(:info, "Running AnyCable (from #{root_dir}): #{command}")
 

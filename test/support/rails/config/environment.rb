@@ -10,7 +10,7 @@ Rails.application.config.root = File.join(__dir__, "..")
 
 require "anyt/tests"
 
-ActionCable.server.config.cable = { "adapter" => "any_cable" }
+ActionCable.server.config.cable = {"adapter" => "any_cable"}
 
 require "anycable-rack-server"
 

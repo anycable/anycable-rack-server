@@ -1,5 +1,6 @@
 [![Cult Of Martians](http://cultofmartians.com/assets/badges/badge.svg)](https://cultofmartians.com/tasks/anycable-ruby-server.html)
-[![Gem Version](https://badge.fury.io/rb/anycable-rack-server.svg)](https://rubygems.org/gems/anycable-rack-server) [![Build Status](https://travis-ci.org/anycable/anycable-rack-server.svg?branch=master)](https://travis-ci.org/anycable/anycable-rack-server)
+[![Gem Version](https://badge.fury.io/rb/anycable-rack-server.svg)](https://rubygems.org/gems/anycable-rack-server)
+[![Build](https://github.com/anycable/anycable-rack-server/workflows/Build/badge.svg)](https://github.com/anycable/nycable-rack-server/actions)
 
 # anycable-rack-server
 
@@ -19,7 +20,7 @@ app = Rack::Builder.new do
   end
 end
 
-# NOTE: don't forget to call `start!` method 
+# NOTE: don't forget to call `start!` method
 ws_server.start!
 
 run app
@@ -80,8 +81,8 @@ Run units with `bundle exec rake`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/anycable/anycable-rack-server.
+Bug reports and pull requests are welcome on GitHub at [https://github.com/anycable/anycable-rack-server](https://github.com/anycable/anycable-rack-server).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [MIT License](./LICENSE).

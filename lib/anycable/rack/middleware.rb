@@ -11,16 +11,16 @@ module AnyCable
     class Middleware # :nodoc:
       PROTOCOLS = ["actioncable-v1-json", "actioncable-unsupported"].freeze
       attr_reader :pinger,
-                  :hub,
-                  :coder,
-                  :rpc_host,
-                  :header_names
+        :hub,
+        :coder,
+        :rpc_host,
+        :header_names
 
       def initialize(pinger:, hub:, coder:, rpc_host:, header_names:)
-        @pinger    = pinger
-        @hub       = hub
-        @coder     = coder
-        @rpc_host  = rpc_host
+        @pinger = pinger
+        @hub = hub
+        @coder = coder
+        @rpc_host = rpc_host
         @header_names = header_names
       end
 
@@ -59,7 +59,7 @@ module AnyCable
       end
 
       def not_found
-        [404, { "Content-Type" => "text/plain" }, ["Not Found"]]
+        [404, {"Content-Type" => "text/plain"}, ["Not Found"]]
       end
 
       def websocket?(env)
@@ -86,8 +86,8 @@ module AnyCable
 
       def fetch_headers(request)
         header_names.each_with_object({}) do |name, acc|
-          header_val = request.env["HTTP_#{name.tr('-', '_').upcase}"]
-          acc[name]  = header_val unless header_val.nil? || header_val.empty?
+          header_val = request.env["HTTP_#{name.tr("-", "_").upcase}"]
+          acc[name] = header_val unless header_val.nil? || header_val.empty?
         end
       end
     end
