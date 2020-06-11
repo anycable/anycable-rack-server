@@ -34,7 +34,11 @@ module AnyCable
 
         def handle_message(msg)
           data = JSON.parse(msg)
-          hub.broadcast(data["stream"], data["data"], coder)
+          if data["stream"]
+            hub.broadcast(data["stream"], data["data"], coder)
+          elsif data["command"] == "disconnect"
+            hub.disconnect(data["identifier"], data["reconnect"])
+          end
         end
       end
     end

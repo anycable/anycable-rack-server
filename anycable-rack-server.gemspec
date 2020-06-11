@@ -14,12 +14,13 @@ Gem::Specification.new do |s|
   s.files = Dir["lib/**/*", "LICENSE", "README.md"]
   s.require_paths = ["lib"]
 
-  s.add_dependency "anycable", "~> 0.6"
+  s.add_dependency "anyway_config", ">= 1.4.2"
+  s.add_dependency "anycable"#, ">= 1.0.0"
   s.add_dependency "websocket", "~> 1.2"
   s.add_dependency "redis", "~> 4"
   s.add_dependency "childprocess", "~> 3.0"
 
-  s.add_development_dependency "anyt", "~> 0.8.5"
+  s.add_development_dependency "anyt"#, ">= 1.0.0"
   s.add_development_dependency "minitest", "~> 5.10"
   s.add_development_dependency "puma"
   s.add_development_dependency "rake", ">= 13.0"

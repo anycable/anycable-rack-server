@@ -69,6 +69,13 @@ module AnyCable
         end
       end
 
+      def broadcast_all(message)
+        sockets.each_key { |socket| socket.transmit(message) }
+      end
+
+      def disconnect(identifier, reconnect)
+      end
+
       def close_all
         hub.sockets.dup.each do |socket|
           hub.remove_socket(socket)

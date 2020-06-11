@@ -68,6 +68,11 @@ module AnyCable # :nodoc: all
         @_started = true
       end
 
+      def shutdown
+        log(:info) { "Shutting down..." }
+        hub.broadcast_all(coder.encode(type: "disconnect", reason: "server_restart", reconnect: true))
+      end
+
       def started?
         @_started == true
       end

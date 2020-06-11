@@ -77,12 +77,8 @@ module AnyCable
         socket.request
       end
 
-      def request_path
-        request.fullpath
-      end
-
       def rpc_connect
-        rpc_client.connect(headers: headers, path: request_path)
+        rpc_client.connect(headers: headers, url: request.url)
       end
 
       def rpc_disconnect
@@ -90,7 +86,7 @@ module AnyCable
           identifiers: @_identifiers,
           subscriptions: @_subscriptions.to_a,
           headers: headers,
-          path: request_path
+          url: request.url
         )
       end
 
@@ -99,7 +95,9 @@ module AnyCable
           command: command,
           identifier: identifier,
           connection_identifiers: @_identifiers,
-          data: data
+          data: data,
+          headers: headers,
+          url: request.url
         )
       end
 
@@ -137,9 +135,9 @@ module AnyCable
       end
 
       def process_open(response)
+        response.transmissions.each { |transmission| transmit(decode(transmission)) } if response.transmissions
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
-          response.transmissions.each { |transmission| transmit(decode(transmission)) }
           log(:debug) { "Opened" }
         else
           log(:error, "RPC connection command failed: #{response.inspect}")

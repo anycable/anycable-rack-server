@@ -13,27 +13,36 @@ module AnyCable
           @stub = AnyCable::RPC::Service.rpc_stub_class.new(host, :this_channel_is_insecure)
         end
 
-        def connect(headers:, path:)
-          request = ConnectionRequest.new(headers: headers, path: path)
+        def connect(headers:, url:)
+          request = ConnectionRequest.new(env: Env.new(headers: headers, url: url))
           stub.connect(request)
         end
 
-        def command(command:, identifier:, connection_identifiers:, data:)
+        def command(command:, identifier:, connection_identifiers:, data:, headers:, url:, connection_state: nil, state: nil)
           message = CommandMessage.new(
             command: command,
             identifier: identifier,
             connection_identifiers: connection_identifiers,
-            data: data
+            data: data,
+            env: Env.new(
+              headers: headers,
+              url: url,
+              cstate: connection_state,
+              istate: state
+            )
           )
           stub.command(message)
         end
 
-        def disconnect(identifiers:, subscriptions:, headers:, path:)
+        def disconnect(identifiers:, subscriptions:, headers:, url:, state: nil)
           request = DisconnectRequest.new(
             identifiers: identifiers,
             subscriptions: subscriptions,
-            headers: headers,
-            path: path
+            env: Env.new(
+              headers: headers,
+              url: url,
+              cstate: state
+            )
           )
           stub.disconnect(request)
         end
