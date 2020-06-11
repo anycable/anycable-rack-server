@@ -13,8 +13,6 @@ module AnyCable
                     rpc_host: "localhost",
                     run_rpc: false,
                     running_rpc: false
-
-        private :running_rpc=
       end
 
       config.before_configuration do
