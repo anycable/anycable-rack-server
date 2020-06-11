@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version = AnyCable::Rack::VERSION
   s.summary = "Anycable Rack Server"
   s.description = "AnyCable-compatible Ruby Rack middleware"
-  s.authors = ["Yulia Oletskaya"]
+  s.authors = ["Yulia Oletskaya", "Vladimir Dementyev"]
   s.email = "yulia.oletskaya@gmail.com"
   s.license = "MIT"
 
