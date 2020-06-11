@@ -3,3 +3,4 @@
 Gemfile.lock
 gemfiles/*.lock
 tmp/
+Gemfile.local

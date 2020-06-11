@@ -3,7 +3,7 @@
 require "anycable"
 require "anycable/rack/logging"
 
-$stdout.sync = true
+require "childprocess"
 
 module AnyCable
   module Rack
@@ -12,10 +12,10 @@ module AnyCable
       class << self
         include Logging
 
-        attr_accessor :running, :pid
+        attr_accessor :process
 
         def run(root_dir:, command_args: [], rpc_host: "[::]:50051", env: {})
-          return if @running
+          return if running?
 
           command_args << "--rpc-host=\"#{rpc_host}\""
 
@@ -23,36 +23,31 @@ module AnyCable
 
           log(:info, "Running AnyCable (from #{root_dir}): #{command}")
 
-          out = AnyCable.config.debug? ? STDOUT : IO::NULL
+          @process = ChildProcess.build(*command.split(/\s+/))
 
-          @pid = Dir.chdir(root_dir) do
-            Process.spawn(
-              env,
-              command,
-              out: out,
-              err: out
-            )
-          end
+          process.io.inherit! if AnyCable.config.debug?
+          process.detach = true
+          process.environment.merge!(env)
+          process.start
 
           log(:debug) { "AnyCable PID: #{pid}" }
-
-          @running = true
 
           at_exit { stop }
         end
 
         def stop
-          return unless running
+          return unless running?
 
           log(:debug) { "Terminate PID: #{pid}" }
+          process.stop
+        end
 
-          Process.kill("SIGKILL", pid)
-
-          @running = false
+        def pid
+          process&.pid
         end
 
         def running?
-          running == true
+          process&.alive?
         end
       end
     end
