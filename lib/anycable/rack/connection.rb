@@ -31,6 +31,7 @@ module AnyCable
 
         @_identifiers = "{}"
         @_subscriptions = Set.new
+        @_istate = {}
       end
 
       def handle_open
@@ -86,7 +87,8 @@ module AnyCable
           identifiers: @_identifiers,
           subscriptions: @_subscriptions.to_a,
           headers: headers,
-          url: request.url
+          url: request.url,
+          state: @_cstate
         )
       end
 
@@ -97,7 +99,9 @@ module AnyCable
           connection_identifiers: @_identifiers,
           data: data,
           headers: headers,
-          url: request.url
+          url: request.url,
+          connection_state: @_cstate,
+          state: @_istate[identifier]
         )
       end
 
@@ -131,6 +135,10 @@ module AnyCable
         response.transmissions.each { |transmission| transmit(decode(transmission)) }
         hub.remove_channel(socket, identifier) if response.stop_streams
         response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
+
+        @_istate[identifier] ||= {}
+        @_istate[identifier].merge!(response.env.istate&.to_h || {})
+
         close_connection if response.disconnect
       end
 
@@ -138,6 +146,7 @@ module AnyCable
         response.transmissions.each { |transmission| transmit(decode(transmission)) } if response.transmissions
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
+          @_cstate = response.env.cstate&.to_h || {}
           log(:debug) { "Opened" }
         else
           log(:error, "RPC connection command failed: #{response.inspect}")
