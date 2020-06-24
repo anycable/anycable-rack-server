@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+gem "redis", "~> 4"
+
 require "redis"
 require "json"
 
@@ -7,16 +9,24 @@ module AnyCable
   module Rack
     module BroadcastSubscribers
       # Redis Pub/Sub subscriber
-      class RedisSubscriber
-        include Logging
+      class RedisSubscriber < BaseSubscriber
+        attr_reader :redis_conn, :threads, :channel
 
-        attr_reader :hub, :coder, :redis_conn, :threads
-
-        def initialize(hub:, coder:, **options)
-          @hub = hub
-          @coder = coder
+        def initialize(hub:, coder:, channel:, **options)
+          super
           @redis_conn = ::Redis.new(options)
+          @channel = channel
           @threads = {}
+        end
+
+        def start
+          subscribe(channel)
+
+          log(:info) { "Subscribed to #{channel}" }
+        end
+
+        def stop
+          unsubscribe(channel)
         end
 
         def subscribe(channel)
@@ -30,19 +40,6 @@ module AnyCable
         def unsubscribe(channel)
           @threads[channel]&.terminate
           @threads.delete(channel)
-        end
-
-        private
-
-        def handle_message(msg)
-          log(:debug) { "Recevied pub/sub message: #{msg}" }
-
-          data = JSON.parse(msg)
-          if data["stream"]
-            hub.broadcast(data["stream"], data["data"], coder)
-          elsif data["command"] == "disconnect"
-            hub.disconnect(data["payload"]["identifier"], data["payload"]["reconnect"])
-          end
         end
       end
     end

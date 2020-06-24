@@ -75,6 +75,41 @@ AnyCable::Rack::RPCRunner.run(
 config.any_cable_rack.run_rpc = true
 ```
 
+## Using HTTP broadcast adapter
+
+### With Rack
+
+```ruby
+ws_server = AnyCable::Rack::Server.new(
+  rpc_host: "localhost:50051",
+  broadcast_adapter: :http
+)
+
+app = Rack::Builder.new do
+  map "/cable" do
+    run ws_server
+  end
+
+  map "/_anycable_rack_broadcast" do
+    run ws_server.broadcast
+  end
+end
+```
+
+### With Rails
+
+Add the following configuration:
+
+```ruby
+config.any_cable_rack.broadcast_adapter = :http
+# (optionally) Specify the mounting path
+config.any_cable_rack.http_broadcast_path = "/_anycable_rack_server" # this is the default value
+```
+
+### Adding authorization check
+
+You can restrict an access to the broadcast endpoint by specifying the `http_broadcast_secret` configuration parameter.
+
 ## Testing
 
 Run units with `bundle exec rake`.
