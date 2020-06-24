@@ -1,6 +1,6 @@
 [![Cult Of Martians](http://cultofmartians.com/assets/badges/badge.svg)](https://cultofmartians.com/tasks/anycable-ruby-server.html)
 [![Gem Version](https://badge.fury.io/rb/anycable-rack-server.svg)](https://rubygems.org/gems/anycable-rack-server)
-[![Build](https://github.com/anycable/anycable-rack-server/workflows/Build/badge.svg)](https://github.com/anycable/nycable-rack-server/actions)
+[![Build](https://github.com/anycable/anycable-rack-server/workflows/Build/badge.svg)](https://github.com/anycable/anycable-rack-server/actions)
 
 # anycable-rack-server
 
@@ -34,7 +34,7 @@ AnyCable Rack Server uses [`anyway_config`](https://github.com/palkan/anyway_con
 
 **NOTE:** AnyCable Rack Server uses the same config name (i.e., env prefix, YML file name, etc.) as AnyCable itself.
 
-You can pass a config object as the ption to `AnyCable::Rack::Server.new`:
+You can pass a config object as the option to `AnyCable::Rack::Server.new`:
 
 ```ruby
 server = AnyCable::Server::Rack.new(config: AnyCable::Rack::Config.new(**params))
