@@ -13,6 +13,8 @@ jobs:
       BUNDLE_JOBS: 4
       BUNDLE_RETRY: 3
       BUNDLE_FORCE_RUBY_PLATFORM: 1
+      ANYT_TIMEOUT_MULTIPLIER: 2
+      ANYCABLE_DEBUG: 1
       CI: true
     services:
       redis:
@@ -48,9 +50,9 @@ jobs:
     - name: Run unit tests
       run: |
         bundle exec rake test
-    - name: Run conformance tests for Rack
-      run: |
-        bundle exec rake anyt:rack
     - name: Run conformance tests for Rails
       run: |
         bundle exec rake anyt:rails
+    - name: Run conformance tests for Rack
+      run: |
+        bundle exec rake anyt:rack
