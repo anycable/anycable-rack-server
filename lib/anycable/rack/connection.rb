@@ -143,10 +143,11 @@ module AnyCable
       end
 
       def process_open(response)
-        response.transmissions.each { |transmission| transmit(decode(transmission)) } if response.transmissions
+        response.transmissions&.each { |transmission| transmit(decode(transmission)) }
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
           @_cstate = response.env.cstate&.to_h || {}
+          hub.add_socket(socket, @_identifiers)
           log(:debug) { "Opened" }
         else
           log(:error, "RPC connection command failed: #{response.inspect}")

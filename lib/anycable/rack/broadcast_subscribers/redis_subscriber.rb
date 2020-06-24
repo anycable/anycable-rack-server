@@ -8,6 +8,8 @@ module AnyCable
     module BroadcastSubscribers
       # Redis Pub/Sub subscriber
       class RedisSubscriber
+        include Logging
+
         attr_reader :hub, :coder, :redis_conn, :threads
 
         def initialize(hub:, coder:, **options)
@@ -33,11 +35,13 @@ module AnyCable
         private
 
         def handle_message(msg)
+          log(:debug) { "Recevied pub/sub message: #{msg}" }
+
           data = JSON.parse(msg)
           if data["stream"]
             hub.broadcast(data["stream"], data["data"], coder)
           elsif data["command"] == "disconnect"
-            hub.disconnect(data["identifier"], data["reconnect"])
+            hub.disconnect(data["payload"]["identifier"], data["payload"]["reconnect"])
           end
         end
       end

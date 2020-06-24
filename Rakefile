@@ -13,14 +13,12 @@ end
 
 namespace :anyt do
   task :rack do
-    Dir.chdir(File.join(__dir__, "test/support/rack")) do
-      sh 'anyt -c "puma config.ru" --except features/server_restart'
-    end
+    sh 'anyt -c "puma test/support/rack/config.ru" --except features/server_restart'
   end
 
   task :rails do
     Dir.chdir(File.join(__dir__, "test/support/rails")) do
-      sh 'anyt -c "puma config.ru" --skip-rpc --wait-command=5 -r ./anyt.rb --except features/server_restart'
+      sh 'anyt -c "puma config.ru" --skip-rpc --wait-command=5 --except features/server_restart'
     end
   end
 end
