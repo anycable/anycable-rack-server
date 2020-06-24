@@ -10,13 +10,12 @@ module AnyCable
     module BroadcastSubscribers
       # Redis Pub/Sub subscriber
       class RedisSubscriber < BaseSubscriber
-        attr_reader :redis_conn, :threads, :channel
+        attr_reader :redis_conn, :thread, :channel
 
         def initialize(hub:, coder:, channel:, **options)
           super
           @redis_conn = ::Redis.new(options)
           @channel = channel
-          @threads = {}
         end
 
         def start
@@ -26,20 +25,29 @@ module AnyCable
         end
 
         def stop
-          unsubscribe(channel)
+          thread&.terminate
         end
 
         def subscribe(channel)
-          @threads[channel] = Thread.new do
-            redis_conn.subscribe(channel) do |on|
-              on.message { |_channel, msg| handle_message(msg) }
+          @thread ||= Thread.new do
+            Thread.current.abort_on_exception = true
+
+            redis_conn.without_reconnect do
+              redis_conn.subscribe(channel) do |on|
+                on.subscribe do |chan, count|
+                  log(:debug) { "Redis subscriber connected to #{chan} (#{count})" }
+                end
+
+                on.unsubscribe do |chan, count|
+                  log(:debug) { "Redis subscribed disconnected from #{chan} (#{count})" }
+                end
+
+                on.message do |_channel, msg|
+                  handle_message(msg)
+                end
+              end
             end
           end
-        end
-
-        def unsubscribe(channel)
-          @threads[channel]&.terminate
-          @threads.delete(channel)
         end
       end
     end
