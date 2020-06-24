@@ -7,7 +7,6 @@ require "anycable/rack/pinger"
 require "anycable/rack/errors"
 require "anycable/rack/middleware"
 require "anycable/rack/logging"
-require "anycable/rack/rpc_runner"
 require "anycable/rack/broadcast_subscribers/base_subscriber"
 require "anycable/rack/coders/json"
 
@@ -16,37 +15,34 @@ module AnyCable # :nodoc: all
     class Server
       include Logging
 
-      DEFAULT_HEADERS = %w[cookie x-api-token].freeze
-
-      attr_reader :broadcast,
+      attr_reader :config,
+        :broadcast,
         :coder,
         :hub,
         :middleware,
         :pinger,
         :rpc_host,
-        :headers
+        :headers,
+        :rpc_cli
 
-      def initialize(*args)
-        options = args.last.is_a?(Hash) ? args.last : {}
-
+      def initialize(config: AnyCable::Rack.config)
+        @config = config
         @hub = Hub.new
         @pinger = Pinger.new
-        @coder = options.fetch(:coder, Coders::JSON)
+        # TODO: Support other coders
+        @coder = Coders::JSON
 
-        @headers = options.fetch(:headers, DEFAULT_HEADERS)
-        @rpc_host = options.fetch(:rpc_host)
-
-        @broadcast = resolve_broadcast_adapter(options.fetch(:broadcast_adapter, :redis), **options)
+        @broadcast = resolve_broadcast_adapter
 
         @middleware = Middleware.new(
-          header_names: headers,
+          header_names: config.headers,
           pinger: pinger,
           hub: hub,
-          rpc_host: rpc_host,
+          rpc_host: config.rpc_host,
           coder: coder
         )
 
-        log(:info) { "Using RPC server at #{rpc_host}" }
+        log(:info) { "Using RPC server at #{config.rpc_host}" }
       end
       # rubocop:enable
 
@@ -57,11 +53,18 @@ module AnyCable # :nodoc: all
 
         broadcast.start
 
+        if config.run_rpc
+          require "anycable/cli"
+          @rpc_cli = AnyCable::CLI.new(embedded: true)
+          @rpc_cli.run
+        end
+
         @_started = true
       end
 
       def shutdown
         log(:info) { "Shutting down..." }
+        rpc_cli&.shutdown
         hub.broadcast_all(coder.encode(type: "disconnect", reason: "server_restart", reconnect: true))
       end
 
@@ -83,12 +86,13 @@ module AnyCable # :nodoc: all
       end
 
       def inspect
-        "#<AnyCable::Rack::Server(rpc_host: #{rpc_host}, headers: [#{headers.join(", ")}])>"
+        "#<AnyCable::Rack::Server(rpc_host: #{config.rpc_host}, headers: [#{config.headers.join(", ")}])>"
       end
 
       private
 
-      def resolve_broadcast_adapter(adapter, **options)
+      def resolve_broadcast_adapter
+        adapter = AnyCable.config.broadcast_adapter.to_s
         require "anycable/rack/broadcast_subscribers/#{adapter}_subscriber"
 
         if adapter.to_s == "redis"
@@ -102,11 +106,11 @@ module AnyCable # :nodoc: all
           BroadcastSubscribers::HTTPSubscriber.new(
             hub: hub,
             coder: coder,
-            token: options[:http_broadcast_secret],
-            path: options[:http_broadcast_path]
+            token: AnyCable.config.http_broadcast_secret,
+            path: config.http_broadcast_path
           )
         else
-          raise ArgumentError, "Unknown adatper: #{adatpter}"
+          raise ArgumentError, "Unsupported broadcast adatper: #{adapter}. AnyCable Rack server only supports: redis, http"
         end
       end
     end

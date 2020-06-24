@@ -10,9 +10,7 @@
 
 ```ruby
 # Initialize server instance first.
-#
-# NOTE: you must run RPC server yourself and provide its host
-ws_server = AnyCable::Rack::Server.new rpc_host: "localhost:50051"
+ws_server = AnyCable::Rack::Server.new
 
 app = Rack::Builder.new do
   map "/cable" do
@@ -30,60 +28,64 @@ run app
 
 Add `gem "anycable-rack-server"` to you `Gemfile` and make sure your Action Cable adapter is set to `:any_cable`. That's it! We automatically start AnyCable Rack server for your at `/cable` path.
 
-## Settings
+## Configuration
+
+AnyCable Rack Server uses [`anyway_config`](https://github.com/palkan/anyway_config) gem for configuration; thus it is possible to set configuration parameters through environment vars (prefixed with `ANYCABLE_`), `config/anycable.yml` file or `secrets.yml` when using Rails.
+
+**NOTE:** AnyCable Rack Server uses the same config name (i.e., env prefix, YML file name, etc.) as AnyCable itself.
+
+You can pass a config object as the ption to `AnyCable::Rack::Server.new`:
+
+```ruby
+server = AnyCable::Server::Rack.new(config: AnyCable::Rack::Config.new(**params))
+```
+
+If no config is passed, a default, global, configuration would be used (`AnyCable::Rack.config`).
+
+When using Rails, `config.anycable_rack` points to `AnyCable::Rack.config`.
+
+### Headers
 
 You can customize the headers being sent with each gRPC request.
 
 Default headers: `'cookie', 'x-api-token'`.
 
-Can be specified via options:
+Can be specified via configuration:
 
 ```ruby
-ws_server = AnyCable::Rack::Server.new(
-  rpc_host: "localhost:50051",
-  headers: ["cookie", "x-my-header"]
-)
+AnyCable::Rack.config.headers = ["cookie", "x-my-header"]
 ```
 
-In case of Rails you can set server options via `config.any_cable_rack`:
+Or in Rails:
 
 ```ruby
 # <environment>.rb
 config.any_cable_rack.headers = %w[cookie]
+```
+
+### Rails-specific options
+
+```ruby
+# Mount WebSocket server at the specified path
 config.any_cable_rack.mount_path = "/cable"
 # NOTE: here we specify only the port (we assume that a server is running locally)
 config.any_cable_rack.rpc_port = 50051
 ```
 
-## Running RPC from the same process
+## Broadcast adapters
 
-The goal of the Rack server is to simplify the development/testing process. But we still have to run the RPC server.
+AnyCable Rack supports Redis (default) and HTTP broadcast adapters (see [the documentation](https://docs.anycable.io/v1/#/ruby/broadcast_adapters)).
 
-This gem also provides a way to run RPC server from the same process (spawning a new process):
+Broadcast adapter is inherited from AnyCable configuration (so, you don't need to configure it twice).
 
-```ruby
-# in Rack app
-
-AnyCable::Rack::RPCRunner.run(
-  root_dir: "<path to your app root directory to run `anycable` from>",
-  rpc_host: "...", # optional host to run RPC server on (defaults to '[::]::50051')
-  command_args: [] # additional CLI arguments
-)
-
-# in Rails app you can just specify the configuration parameter (`false` by default)
-# and we'll take care of it
-config.any_cable_rack.run_rpc = true
-```
-
-## Using HTTP broadcast adapter
+### Using HTTP broadcast adapter
 
 ### With Rack
 
 ```ruby
-ws_server = AnyCable::Rack::Server.new(
-  rpc_host: "localhost:50051",
-  broadcast_adapter: :http
-)
+AnyCable::Rack.config.broadast_adapter = :http
+
+ws_server = AnyCable::Rack::Server
 
 app = Rack::Builder.new do
   map "/cable" do
@@ -98,17 +100,33 @@ end
 
 ### With Rails
 
-Add the following configuration:
+By default, we mount broadcasts endpoint at `/_anycable_rack_broadcast`.
+
+You can change this setting:
 
 ```ruby
-config.any_cable_rack.broadcast_adapter = :http
-# (optionally) Specify the mounting path
-config.any_cable_rack.http_broadcast_path = "/_anycable_rack_server" # this is the default value
+config.any_cable_rack.http_broadcast_path = "/_my_broadcast"
 ```
 
-### Adding authorization check
+**NOTE:** Don't forget to configure `http_broadcast_url` for AnyCable pointing to your web server and the specified broadcast path.
 
-You can restrict an access to the broadcast endpoint by specifying the `http_broadcast_secret` configuration parameter.
+## Running RPC from the same process
+
+The goal of the Rack server is to simplify the development/testing process. But we still have to run the RPC server.
+
+This gem also provides a way to run RPC server within the same process.
+All you need to do is set `run_rpc = true` in the configuration:
+
+```ruby
+# in Rack app
+AnyCable::Rack.config.run_rpc = true
+
+# and only after that
+ws_server.start!
+
+# in Rails
+config.any_cable_rack.run_rpc = true
+```
 
 ## Testing
 
