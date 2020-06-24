@@ -44,6 +44,8 @@ module AnyCable
 
                 on.message do |_channel, msg|
                   handle_message(msg)
+                rescue
+                  log(:error) { "Failed to broadcast message: #{msg}" }
                 end
               end
             end

@@ -29,7 +29,7 @@ module AnyCable
           type: type
         )
         socket.write(frame.to_s)
-      rescue IOError, Errno::EPIPE, Errno::ETIMEDOUT => e
+      rescue Exception => e # rubocop:disable Lint/RescueException
         log(:error, "Socket send failed: #{e}")
         close
       end
@@ -102,7 +102,7 @@ module AnyCable
         frame = WebSocket::Frame::Outgoing::Server.new(version: version, type: :close, code: 1000)
         socket.write(frame.to_s) if frame.supported?
         socket.close
-      rescue IOError, Errno::EPIPE, Errno::ETIMEDOUT
+      rescue Exception # rubocop:disable Lint/RescueException
         # already closed
       end
 
@@ -143,7 +143,7 @@ module AnyCable
             end
           end
         end
-      rescue Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNRESET, IOError, Errno::EBADF => e
+      rescue Exception => e # rubocop:disable Lint/RescueException
         log(:error, "Socket frame error: #{e}")
         nil # client disconnected or timed out
       end
