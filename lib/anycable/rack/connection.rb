@@ -135,6 +135,7 @@ module AnyCable
         response.transmissions.each { |transmission| transmit(decode(transmission)) }
         hub.remove_channel(socket, identifier) if response.stop_streams
         response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
+        response.stopped_streams.each { |stream| hub.remove_subscriber(stream, socket, identifier) }
 
         @_istate[identifier] ||= {}
         @_istate[identifier].merge!(response.env.istate&.to_h || {})
