@@ -58,18 +58,14 @@ module AnyCable # :nodoc: all
 
         broadcast.start
 
-        if config.run_rpc
-          require "anycable/cli"
-          @rpc_cli = AnyCable::CLI.new(embedded: true)
-          @rpc_cli.run
-        end
+        Rack.rpc_server.run if config.run_rpc
 
         @_started = true
       end
 
       def shutdown
         log(:info) { "Shutting down..." }
-        rpc_cli&.shutdown
+        Rack.rpc_server&.shutdown
         hub.broadcast_all(coder.encode(type: "disconnect", reason: "server_restart", reconnect: true))
       end
 
