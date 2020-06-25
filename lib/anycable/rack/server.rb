@@ -7,8 +7,7 @@ require "anycable/rack/pinger"
 require "anycable/rack/errors"
 require "anycable/rack/middleware"
 require "anycable/rack/logging"
-require "anycable/rack/rpc_runner"
-require "anycable/rack/broadcast_subscribers/redis_subscriber"
+require "anycable/rack/broadcast_subscribers/base_subscriber"
 require "anycable/rack/coders/json"
 
 module AnyCable # :nodoc: all
@@ -16,43 +15,39 @@ module AnyCable # :nodoc: all
     class Server
       include Logging
 
-      DEFAULT_HEADERS = %w[cookie x-api-token].freeze
-
-      attr_reader :broadcast,
+      attr_reader :config,
+        :broadcast,
         :coder,
         :hub,
         :middleware,
         :pinger,
-        :pubsub_channel,
-        :rpc_host,
-        :headers
+        :rpc_client,
+        :headers,
+        :rpc_cli
 
-      def initialize(*args)
-        options = args.last.is_a?(Hash) ? args.last : {}
-
+      def initialize(config: AnyCable::Rack.config)
+        @config = config
         @hub = Hub.new
         @pinger = Pinger.new
-        @coder = options.fetch(:coder, Coders::JSON)
-        @pubsub_channel = pubsub_channel
+        # TODO: Support other coders
+        @coder = Coders::JSON
 
-        @headers = options.fetch(:headers, DEFAULT_HEADERS)
-        @rpc_host = options.fetch(:rpc_host)
-
-        @broadcast = BroadcastSubscribers::RedisSubscriber.new(
-          hub: hub,
-          coder: coder,
-          **AnyCable.config.to_redis_params
+        @broadcast = resolve_broadcast_adapter
+        @rpc_client = RPC::Client.new(
+          host: config.rpc_addr,
+          size: config.rpc_client_pool_size,
+          timeout: config.rpc_client_timeout
         )
 
         @middleware = Middleware.new(
-          header_names: headers,
+          header_names: config.headers,
           pinger: pinger,
           hub: hub,
-          rpc_host: rpc_host,
+          rpc_client: rpc_client,
           coder: coder
         )
 
-        log(:info) { "Using RPC server at #{rpc_host}" }
+        log(:info) { "Connecting to RPC server at #{config.rpc_addr}" }
       end
       # rubocop:enable
 
@@ -61,11 +56,21 @@ module AnyCable # :nodoc: all
 
         pinger.run
 
-        broadcast.subscribe(AnyCable.config.redis_channel)
+        broadcast.start
 
-        log(:info) { "Subscribed to #{AnyCable.config.redis_channel}" }
+        if config.run_rpc
+          require "anycable/cli"
+          @rpc_cli = AnyCable::CLI.new(embedded: true)
+          @rpc_cli.run
+        end
 
         @_started = true
+      end
+
+      def shutdown
+        log(:info) { "Shutting down..." }
+        rpc_cli&.shutdown
+        hub.broadcast_all(coder.encode(type: "disconnect", reason: "server_restart", reconnect: true))
       end
 
       def started?
@@ -76,7 +81,7 @@ module AnyCable # :nodoc: all
         return unless started?
 
         @_started = false
-        broadcast_subscriber.unsubscribe(@_redis_channel)
+        broadcast_subscriber.stop
         pinger.stop
         hub.close_all
       end
@@ -86,7 +91,32 @@ module AnyCable # :nodoc: all
       end
 
       def inspect
-        "#<AnyCable::Rack::Server(rpc_host: #{rpc_host}, headers: [#{headers.join(", ")}])>"
+        "#<AnyCable::Rack::Server(rpc_addr: #{config.rpc_addr}, headers: [#{config.headers.join(", ")}])>"
+      end
+
+      private
+
+      def resolve_broadcast_adapter
+        adapter = AnyCable.config.broadcast_adapter.to_s
+        require "anycable/rack/broadcast_subscribers/#{adapter}_subscriber"
+
+        if adapter.to_s == "redis"
+          BroadcastSubscribers::RedisSubscriber.new(
+            hub: hub,
+            coder: coder,
+            channel: AnyCable.config.redis_channel,
+            **AnyCable.config.to_redis_params
+          )
+        elsif adapter.to_s == "http"
+          BroadcastSubscribers::HTTPSubscriber.new(
+            hub: hub,
+            coder: coder,
+            token: AnyCable.config.http_broadcast_secret,
+            path: config.http_broadcast_path
+          )
+        else
+          raise ArgumentError, "Unsupported broadcast adatper: #{adapter}. AnyCable Rack server only supports: redis, http"
+        end
       end
     end
   end

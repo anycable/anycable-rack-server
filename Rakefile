@@ -13,14 +13,14 @@ end
 
 namespace :anyt do
   task :rack do
-    Dir.chdir(File.join(__dir__, "test/support/rack")) do
-      sh 'anyt -c "puma config.ru"'
-    end
+    sh 'anyt -c "puma test/support/rack/config.ru" --except features/server_restart'
   end
 
   task :rails do
     Dir.chdir(File.join(__dir__, "test/support/rails")) do
-      sh 'anyt -c "puma config.ru" --skip-rpc --wait-command=5 -r ./anyt.rb'
+      sh "ANYCABLE_BROADCAST_ADAPTER=http ANYCABLE_HTTP_BROADCAST_SECRET=any_secret " \
+         "ANYCABLE_HTTP_BROADCAST_URL=http://localhost:9292/_anycable_rack_broadcast " \
+         "anyt -c \"puma config.ru\" --skip-rpc --wait-command=5 --except features/server_restart"
     end
   end
 end

@@ -1,5 +1,9 @@
 source "https://rubygems.org"
 
+gem "anycable", github: "anycable/anycable"
+gem "anycable-rails", github: "anycable/anycable-rails"
+gem "anyt", github: "anycable/anyt"
+
 gem "rails", github: "rails/rails"
 gem "sqlite3", "~> 1.4"
 

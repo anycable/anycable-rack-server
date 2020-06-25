@@ -13,14 +13,14 @@ module AnyCable
       attr_reader :pinger,
         :hub,
         :coder,
-        :rpc_host,
+        :rpc_client,
         :header_names
 
-      def initialize(pinger:, hub:, coder:, rpc_host:, header_names:)
+      def initialize(pinger:, hub:, coder:, rpc_client:, header_names:)
         @pinger = pinger
         @hub = hub
         @coder = coder
-        @rpc_host = rpc_host
+        @rpc_client = rpc_client
         @header_names = header_names
       end
 
@@ -71,7 +71,7 @@ module AnyCable
           socket,
           hub: hub,
           coder: coder,
-          rpc_host: rpc_host,
+          rpc_client: rpc_client,
           headers: fetch_headers(socket.request)
         )
         socket.onopen { connection.handle_open }

@@ -6,6 +6,8 @@ module AnyCable
   module Rack
     # From https://github.com/rails/rails/blob/v5.0.1/actioncable/lib/action_cable/subscription_adapter/subscriber_map.rb
     class Hub
+      INTERNAL_STREAM = :__internal__
+
       attr_reader :streams, :sockets
 
       def initialize
@@ -14,6 +16,12 @@ module AnyCable
         end
         @sockets = Hash.new { |h, k| h[k] = Set.new }
         @sync = Mutex.new
+      end
+
+      def add_socket(socket, identifier)
+        @sync.synchronize do
+          @streams[INTERNAL_STREAM][identifier] << socket
+        end
       end
 
       def add_subscriber(stream, socket, channel)
@@ -69,6 +77,25 @@ module AnyCable
         end
       end
 
+      def broadcast_all(message)
+        sockets.each_key { |socket| socket.transmit(message) }
+      end
+
+      def disconnect(identifier, reconnect)
+        sockets = @sync.synchronize do
+          return unless @streams[INTERNAL_STREAM].key?(identifier)
+
+          @streams[INTERNAL_STREAM][identifier].to_a
+        end
+
+        msg = disconnect_message("remote", reconnect)
+
+        sockets.each do |socket|
+          socket.transmit(msg)
+          socket.close
+        end
+      end
+
       def close_all
         hub.sockets.dup.each do |socket|
           hub.remove_socket(socket)
@@ -86,6 +113,11 @@ module AnyCable
 
       def channel_message(channel_id, message, coder)
         coder.encode(identifier: channel_id, message: message)
+      end
+
+      # FIXME: coder support?
+      def disconnect_message(reason, reconnect)
+        {type: :disconnect, reason: reason, reconnect: reconnect}.to_json
       end
     end
   end

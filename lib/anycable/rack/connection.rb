@@ -20,17 +20,18 @@ module AnyCable
         :rpc_client,
         :sid
 
-      def initialize(socket, hub:, coder:, rpc_host:, headers:)
+      def initialize(socket, hub:, coder:, rpc_client:, headers:)
         @socket = socket
         @coder = coder
         @headers = headers
         @hub = hub
         @sid = SecureRandom.hex(6)
 
-        @rpc_client = RPC::Client.new(rpc_host)
+        @rpc_client = rpc_client
 
         @_identifiers = "{}"
         @_subscriptions = Set.new
+        @_istate = {}
       end
 
       def handle_open
@@ -77,12 +78,8 @@ module AnyCable
         socket.request
       end
 
-      def request_path
-        request.fullpath
-      end
-
       def rpc_connect
-        rpc_client.connect(headers: headers, path: request_path)
+        rpc_client.connect(headers: headers, url: request.url)
       end
 
       def rpc_disconnect
@@ -90,7 +87,8 @@ module AnyCable
           identifiers: @_identifiers,
           subscriptions: @_subscriptions.to_a,
           headers: headers,
-          path: request_path
+          url: request.url,
+          state: @_cstate
         )
       end
 
@@ -99,7 +97,11 @@ module AnyCable
           command: command,
           identifier: identifier,
           connection_identifiers: @_identifiers,
-          data: data
+          data: data,
+          headers: headers,
+          url: request.url,
+          connection_state: @_cstate,
+          state: @_istate[identifier]
         )
       end
 
@@ -133,13 +135,20 @@ module AnyCable
         response.transmissions.each { |transmission| transmit(decode(transmission)) }
         hub.remove_channel(socket, identifier) if response.stop_streams
         response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
+        response.stopped_streams.each { |stream| hub.remove_subscriber(stream, socket, identifier) }
+
+        @_istate[identifier] ||= {}
+        @_istate[identifier].merge!(response.env.istate&.to_h || {})
+
         close_connection if response.disconnect
       end
 
       def process_open(response)
+        response.transmissions&.each { |transmission| transmit(decode(transmission)) }
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
-          response.transmissions.each { |transmission| transmit(decode(transmission)) }
+          @_cstate = response.env.cstate&.to_h || {}
+          hub.add_socket(socket, @_identifiers)
           log(:debug) { "Opened" }
         else
           log(:error, "RPC connection command failed: #{response.inspect}")

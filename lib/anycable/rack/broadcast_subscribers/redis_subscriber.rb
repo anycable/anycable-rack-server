@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+gem "redis", "~> 4"
+
 require "redis"
 require "json"
 
@@ -7,34 +9,47 @@ module AnyCable
   module Rack
     module BroadcastSubscribers
       # Redis Pub/Sub subscriber
-      class RedisSubscriber
-        attr_reader :hub, :coder, :redis_conn, :threads
+      class RedisSubscriber < BaseSubscriber
+        attr_reader :redis_conn, :thread, :channel
 
-        def initialize(hub:, coder:, **options)
-          @hub = hub
-          @coder = coder
+        def initialize(hub:, coder:, channel:, **options)
+          super
           @redis_conn = ::Redis.new(options)
-          @threads = {}
+          @channel = channel
+        end
+
+        def start
+          subscribe(channel)
+
+          log(:info) { "Subscribed to #{channel}" }
+        end
+
+        def stop
+          thread&.terminate
         end
 
         def subscribe(channel)
-          @threads[channel] = Thread.new do
-            redis_conn.subscribe(channel) do |on|
-              on.message { |_channel, msg| handle_message(msg) }
+          @thread ||= Thread.new do
+            Thread.current.abort_on_exception = true
+
+            redis_conn.without_reconnect do
+              redis_conn.subscribe(channel) do |on|
+                on.subscribe do |chan, count|
+                  log(:debug) { "Redis subscriber connected to #{chan} (#{count})" }
+                end
+
+                on.unsubscribe do |chan, count|
+                  log(:debug) { "Redis subscribed disconnected from #{chan} (#{count})" }
+                end
+
+                on.message do |_channel, msg|
+                  handle_message(msg)
+                rescue
+                  log(:error) { "Failed to broadcast message: #{msg}" }
+                end
+              end
             end
           end
-        end
-
-        def unsubscribe(channel)
-          @threads[channel]&.terminate
-          @threads.delete(channel)
-        end
-
-        private
-
-        def handle_message(msg)
-          data = JSON.parse(msg)
-          hub.broadcast(data["stream"], data["data"], coder)
         end
       end
     end
