@@ -2,6 +2,8 @@
 
 ## master
 
+## 0.2.0.rc1 (2020-06-25)
+
 - Use connection pool for gRPC clients. ([@palkan][])
 
 - Embed RPC server into the running process instead of spawning a new one. ([@palkan][])

@@ -5,7 +5,7 @@ require_relative "lib/anycable/rack/version"
 Gem::Specification.new do |s|
   s.name = "anycable-rack-server"
   s.version = AnyCable::Rack::VERSION
-  s.summary = "Anycable Rack Server"
+  s.summary = "AnyCable Rack Server"
   s.description = "AnyCable-compatible Ruby Rack middleware"
   s.authors = ["Yulia Oletskaya", "Vladimir Dementyev"]
   s.email = "yulia.oletskaya@gmail.com"
@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency "anyway_config", ">= 1.4.2"
+  # FIXME: add version restrictions
   s.add_dependency "anycable"
   s.add_dependency "connection_pool", "~> 2.2"
   s.add_dependency "websocket", "~> 1.2"
