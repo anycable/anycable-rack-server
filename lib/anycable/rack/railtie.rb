@@ -11,8 +11,7 @@ module AnyCable
         config.after_initialize do |app|
           config = app.config.any_cable_rack
 
-          # Only if AnyCable adapter is used
-          next unless AnyCable::Rails.enabled?
+          next unless config.mount_path
 
           server = AnyCable::Rack::Server.new
 
