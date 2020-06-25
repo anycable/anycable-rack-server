@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "connection_pool"
 require "grpc"
 
 module AnyCable
@@ -7,16 +8,20 @@ module AnyCable
     module RPC
       # AnyCable RPC client
       class Client
-        attr_reader :stub, :metadata
+        attr_reader :pool, :metadata
 
-        def initialize(host)
-          @stub = AnyCable::RPC::Service.rpc_stub_class.new(host, :this_channel_is_insecure)
+        def initialize(host:, size:, timeout:)
+          @pool = ConnectionPool.new(size: size, timeout: timeout) do
+            AnyCable::RPC::Service.rpc_stub_class.new(host, :this_channel_is_insecure)
+          end
           @metadata = {metadata: {"protov" => "v1"}}.freeze
         end
 
         def connect(headers:, url:)
           request = ConnectionRequest.new(env: Env.new(headers: headers, url: url))
-          stub.connect(request, metadata)
+          pool.with do |stub|
+            stub.connect(request, metadata)
+          end
         end
 
         def command(command:, identifier:, connection_identifiers:, data:, headers:, url:, connection_state: nil, state: nil)
@@ -32,7 +37,9 @@ module AnyCable
               istate: state
             )
           )
-          stub.command(message, metadata)
+          pool.with do |stub|
+            stub.command(message, metadata)
+          end
         end
 
         def disconnect(identifiers:, subscriptions:, headers:, url:, state: nil)
@@ -45,7 +52,9 @@ module AnyCable
               cstate: state
             )
           )
-          stub.disconnect(request, metadata)
+          pool.with do |stub|
+            stub.disconnect(request, metadata)
+          end
         end
       end
     end

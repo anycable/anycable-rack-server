@@ -20,14 +20,14 @@ module AnyCable
         :rpc_client,
         :sid
 
-      def initialize(socket, hub:, coder:, rpc_host:, headers:)
+      def initialize(socket, hub:, coder:, rpc_client:, headers:)
         @socket = socket
         @coder = coder
         @headers = headers
         @hub = hub
         @sid = SecureRandom.hex(6)
 
-        @rpc_client = RPC::Client.new(rpc_host)
+        @rpc_client = rpc_client
 
         @_identifiers = "{}"
         @_subscriptions = Set.new

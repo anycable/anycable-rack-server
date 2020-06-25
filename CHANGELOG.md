@@ -2,6 +2,8 @@
 
 ## master
 
+- Use connection pool for gRPC clients. ([@palkan][])
+
 - Embed RPC server into the running process instead of spawning a new one. ([@palkan][])
 
 Use `AnyCable::CLI.new(embedded: true)` when `config.run_rpc = true` instead of spawning a new process.

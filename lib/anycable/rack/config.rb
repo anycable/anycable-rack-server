@@ -12,7 +12,9 @@ module AnyCable
 
       attr_config mount_path: "/cable",
                   headers: DEFAULT_HEADERS,
-                  rpc_host: "localhost:50051",
+                  rpc_addr: "localhost:50051",
+                  rpc_client_pool_size: 5,
+                  rpc_client_timeout: 5,
                   http_broadcast_path: "/_anycable_rack_broadcast",
                   run_rpc: false
     end

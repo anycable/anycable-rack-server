@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "anyway_config", ">= 1.4.2"
   s.add_dependency "anycable"
+  s.add_dependency "connection_pool", "~> 2.2"
   s.add_dependency "websocket", "~> 1.2"
 
   s.add_development_dependency "anyt"

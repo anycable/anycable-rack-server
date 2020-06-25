@@ -21,7 +21,7 @@ module AnyCable # :nodoc: all
         :hub,
         :middleware,
         :pinger,
-        :rpc_host,
+        :rpc_client,
         :headers,
         :rpc_cli
 
@@ -33,16 +33,21 @@ module AnyCable # :nodoc: all
         @coder = Coders::JSON
 
         @broadcast = resolve_broadcast_adapter
+        @rpc_client = RPC::Client.new(
+          host: config.rpc_addr,
+          size: config.rpc_client_pool_size,
+          timeout: config.rpc_client_timeout
+        )
 
         @middleware = Middleware.new(
           header_names: config.headers,
           pinger: pinger,
           hub: hub,
-          rpc_host: config.rpc_host,
+          rpc_client: rpc_client,
           coder: coder
         )
 
-        log(:info) { "Using RPC server at #{config.rpc_host}" }
+        log(:info) { "Connecting to RPC server at #{config.rpc_addr}" }
       end
       # rubocop:enable
 
@@ -86,7 +91,7 @@ module AnyCable # :nodoc: all
       end
 
       def inspect
-        "#<AnyCable::Rack::Server(rpc_host: #{config.rpc_host}, headers: [#{config.headers.join(", ")}])>"
+        "#<AnyCable::Rack::Server(rpc_addr: #{config.rpc_addr}, headers: [#{config.headers.join(", ")}])>"
       end
 
       private
