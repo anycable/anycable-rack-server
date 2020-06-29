@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "anycable/rack/version"
 require "anycable/rack/config"
 require "anycable/rack/server"
 
