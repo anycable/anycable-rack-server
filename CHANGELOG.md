@@ -2,7 +2,7 @@
 
 ## master
 
-## 0.2.0.rc1 (2020-06-25)
+## 0.2.0 (2020-07-01)
 
 - Use connection pool for gRPC clients. ([@palkan][])
 
