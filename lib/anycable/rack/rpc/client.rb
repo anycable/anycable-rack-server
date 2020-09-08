@@ -42,19 +42,27 @@ module AnyCable
           end
         end
 
-        def disconnect(identifiers:, subscriptions:, headers:, url:, state: nil)
+        def disconnect(identifiers:, subscriptions:, headers:, url:, state: nil, channels_state: nil)
           request = DisconnectRequest.new(
             identifiers: identifiers,
             subscriptions: subscriptions,
             env: Env.new(
               headers: headers,
               url: url,
-              cstate: state
+              cstate: state,
+              istate: encode_istate(channels_state)
             )
           )
           pool.with do |stub|
             stub.disconnect(request, metadata)
           end
+        end
+
+        private
+
+        # We need a string -> string Hash here
+        def encode_istate(state)
+          state.transform_values(&:to_json)
         end
       end
     end

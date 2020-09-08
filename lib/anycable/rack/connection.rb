@@ -88,7 +88,8 @@ module AnyCable
           subscriptions: @_subscriptions.to_a,
           headers: headers,
           url: request.url,
-          state: @_cstate
+          state: @_cstate,
+          channels_state: @_istate
         )
       end
 
