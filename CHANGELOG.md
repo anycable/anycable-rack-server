@@ -2,6 +2,8 @@
 
 ## master
 
+## 0.2.1 (2020-09-08)
+
 - Add channel states to `disconnect` requests. ([@palkan][])
 
 ## 0.2.0 (2020-07-01)
