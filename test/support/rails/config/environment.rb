@@ -14,8 +14,6 @@ ActionCable.server.config.cable = {"adapter" => "any_cable"}
 
 require "anycable-rack-server"
 
-Rails.application.config.any_cable_rack.run_rpc = true
-
 # Load channels from tests
 Anyt::Tests.load_all_tests
 

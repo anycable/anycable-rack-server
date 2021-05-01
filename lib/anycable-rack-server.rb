@@ -10,13 +10,6 @@ module AnyCable
       def config
         @config ||= Config.new
       end
-
-      def rpc_server
-        return @rpc_server if instance_variable_defined?(:@rpc_server)
-
-        require "anycable/cli"
-        @rpc_server = AnyCable::CLI.new(embedded: true)
-      end
     end
   end
 end

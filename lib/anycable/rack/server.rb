@@ -58,8 +58,6 @@ module AnyCable # :nodoc: all
 
         broadcast.start
 
-        Rack.rpc_server.run if config.run_rpc
-
         @_started = true
       end
 

@@ -110,24 +110,6 @@ config.any_cable_rack.http_broadcast_path = "/_my_broadcast"
 
 **NOTE:** Don't forget to configure `http_broadcast_url` for AnyCable pointing to your web server and the specified broadcast path.
 
-## Running RPC from the same process
-
-The goal of the Rack server is to simplify the development/testing process. But we still have to run the RPC server.
-
-This gem also provides a way to run RPC server within the same process.
-All you need to do is set `run_rpc = true` in the configuration:
-
-```ruby
-# in Rack app
-AnyCable::Rack.config.run_rpc = true
-
-# and only after that
-ws_server.start!
-
-# in Rails
-config.any_cable_rack.run_rpc = true
-```
-
 ## Testing
 
 Run units with `bundle exec rake`.

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "connection_pool"
-require "grpc"
+require "anycable/grpc"
 
 module AnyCable
   module Rack
@@ -12,7 +12,7 @@ module AnyCable
 
         def initialize(host:, size:, timeout:)
           @pool = ConnectionPool.new(size: size, timeout: timeout) do
-            AnyCable::RPC::Service.rpc_stub_class.new(host, :this_channel_is_insecure)
+            AnyCable::GRPC::Service.rpc_stub_class.new(host, :this_channel_is_insecure)
           end
           @metadata = {metadata: {"protov" => "v1"}}.freeze
         end
