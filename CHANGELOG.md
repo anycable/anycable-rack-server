@@ -2,6 +2,12 @@
 
 ## master
 
+- Added Msgpack coder support. ([@palkan][])
+
+## 0.3.0 (2020-05-12)
+
+- AnyCable v1.1 compatibility. ([@palkan][])
+
 ## 0.2.1 (2020-09-08)
 
 - Add channel states to `disconnect` requests. ([@palkan][])

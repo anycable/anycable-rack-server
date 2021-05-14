@@ -12,6 +12,7 @@ module AnyCable
 
       attr_config mount_path: "/cable",
                   headers: DEFAULT_HEADERS,
+                  coder: :json,
                   rpc_addr: "localhost:50051",
                   rpc_client_pool_size: 5,
                   rpc_client_timeout: 5,

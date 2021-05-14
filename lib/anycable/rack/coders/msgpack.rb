@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
-require "json"
+gem "msgpack", "~> 1.4"
+require "msgpack"
 
 module AnyCable
   module Rack
     module Coders
-      module Json # :nodoc:
+      module Msgpack # :nodoc:
         class << self
-          def decode(json_str)
-            ::JSON.parse(json_str)
+          def decode(bin)
+            MessagePack.unpack(bin)
           end
 
           def encode(ruby_obj)
-            ruby_obj.to_json
+            BinaryFrame.new(MessagePack.pack(ruby_obj))
           end
         end
       end

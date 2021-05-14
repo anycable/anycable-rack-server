@@ -34,6 +34,7 @@ module AnyCable
       end
 
       def transmit(data, type: nil)
+        # p "DATA: #{data.class} — #{data.to_s}"
         type ||= data.is_a?(BinaryFrame) ? :binary : :text
         frame = WebSocket::Frame::Outgoing::Server.new(
           version: version,

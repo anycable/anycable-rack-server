@@ -8,7 +8,6 @@ require "anycable/rack/errors"
 require "anycable/rack/middleware"
 require "anycable/rack/logging"
 require "anycable/rack/broadcast_subscribers/base_subscriber"
-require "anycable/rack/coders/json"
 
 module AnyCable # :nodoc: all
   module Rack
@@ -28,8 +27,7 @@ module AnyCable # :nodoc: all
       def initialize(config: AnyCable::Rack.config)
         @config = config
         @hub = Hub.new
-        # TODO: Support other coders
-        @coder = Coders::JSON
+        @coder = resolve_coder(config.coder)
         @pinger = Pinger.new(coder)
 
         @broadcast = resolve_broadcast_adapter
@@ -111,6 +109,11 @@ module AnyCable # :nodoc: all
         else
           raise ArgumentError, "Unsupported broadcast adatper: #{adapter}. AnyCable Rack server only supports: redis, http"
         end
+      end
+
+      def resolve_coder(name)
+        require "anycable/rack/coders/#{name}"
+        AnyCable::Rack::Coders.const_get(name.capitalize)
       end
     end
   end

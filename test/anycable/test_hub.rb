@@ -2,6 +2,7 @@
 
 require "minitest/autorun"
 require "anycable-rack-server"
+require "anycable/rack/coders/json"
 require "securerandom"
 require "set"
 
@@ -13,7 +14,7 @@ class TestHub < Minitest::Test
     :stream
 
   def setup
-    @coder = AnyCable::Rack::Coders::JSON
+    @coder = AnyCable::Rack::Coders::Json
     @hub = AnyCable::Rack::Hub.new
     @channel = "channel"
     @msg = {data: :test}.to_json
