@@ -57,7 +57,7 @@ jobs:
         bundle exec rake test
     - name: Run conformance tests for Rails
       run: |
-        bundle exec rake anyt:rails
+        bundle exec rake anyt:rails || bundle exec rake anyt:rails || bundle exec rake anyt:rails
     - name: Run conformance tests for Rack
       run: |
-        bundle exec rake anyt:rack
+        bundle exec rake anyt:rack || bundle exec rake anyt:rack || bundle exec rake anyt:rack
