@@ -28,9 +28,9 @@ module AnyCable # :nodoc: all
       def initialize(config: AnyCable::Rack.config)
         @config = config
         @hub = Hub.new
-        @pinger = Pinger.new
         # TODO: Support other coders
         @coder = Coders::JSON
+        @pinger = Pinger.new(coder)
 
         @broadcast = resolve_broadcast_adapter
         @rpc_client = RPC::Client.new(

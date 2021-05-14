@@ -67,7 +67,8 @@ module AnyCable
       private
 
       def transmit(cable_message)
-        socket.transmit(encode(cable_message))
+        encoded = encode(cable_message)
+        socket.transmit(encoded)
       end
 
       def close
@@ -133,7 +134,7 @@ module AnyCable
       end
 
       def process_command(response, identifier)
-        response.transmissions.each { |transmission| transmit(decode(transmission)) }
+        response.transmissions.each { |transmission| transmit(decode_transmission(transmission)) }
         hub.remove_channel(socket, identifier) if response.stop_streams
         response.streams.each { |stream| hub.add_subscriber(stream, socket, identifier) }
         response.stopped_streams.each { |stream| hub.remove_subscriber(stream, socket, identifier) }
@@ -145,7 +146,7 @@ module AnyCable
       end
 
       def process_open(response)
-        response.transmissions&.each { |transmission| transmit(decode(transmission)) }
+        response.transmissions&.each { |transmission| transmit(decode_transmission(transmission)) }
         if response.status == :SUCCESS
           @_identifiers = response.identifiers
           @_cstate = response.env.cstate&.to_h || {}
@@ -179,6 +180,10 @@ module AnyCable
 
       def encode(cable_message)
         coder.encode(cable_message)
+      end
+
+      def decode_transmission(json_message)
+        JSON.parse(json_message)
       end
 
       def decode(websocket_message)

@@ -8,7 +8,10 @@ module AnyCable
     class Pinger
       INTERVAL = 3
 
-      def initialize
+      attr_reader :coder
+
+      def initialize(coder)
+        @coder = coder
         @_sockets = []
         @_stopped = false
       end
@@ -45,7 +48,7 @@ module AnyCable
       private
 
       def ping_message(time)
-        {type: :ping, message: time}.to_json
+        coder.encode({type: :ping, message: time})
       end
     end
   end

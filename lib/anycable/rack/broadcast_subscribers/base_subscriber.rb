@@ -32,7 +32,7 @@ module AnyCable
           if data["stream"]
             hub.broadcast(data["stream"], data["data"], coder)
           elsif data["command"] == "disconnect"
-            hub.disconnect(data["payload"]["identifier"], data["payload"]["reconnect"])
+            hub.disconnect(data["payload"]["identifier"], data["payload"]["reconnect"], coder)
           end
         end
       end

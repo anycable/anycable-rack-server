@@ -4,6 +4,17 @@ require "anycable/rack/logging"
 
 module AnyCable
   module Rack
+    # Wrapper for outgoing data used to correctly set the WS frame type
+    class BinaryFrame
+      def initialize(data)
+        @data = data
+      end
+
+      def to_s
+        @data.to_s
+      end
+    end
+
     # Socket wrapper
     class Socket
       include Logging
@@ -22,7 +33,8 @@ module AnyCable
         @_active = true
       end
 
-      def transmit(data, type: :text)
+      def transmit(data, type: nil)
+        type ||= data.is_a?(BinaryFrame) ? :binary : :text
         frame = WebSocket::Frame::Outgoing::Server.new(
           version: version,
           data: data,
@@ -144,7 +156,7 @@ module AnyCable
           end
         end
       rescue Exception => e # rubocop:disable Lint/RescueException
-        log(:error, "Socket frame error: #{e}")
+        log(:error, "Socket frame error: #{e}\n #{e.backtrace.take(4).join("\n")}")
         nil # client disconnected or timed out
       end
     end

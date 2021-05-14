@@ -71,7 +71,7 @@ module AnyCable
         end
 
         list.each do |(channel_id, sockets)|
-          decoded = coder.decode(message)
+          decoded = JSON.parse(message)
           cmessage = channel_message(channel_id, decoded, coder)
           sockets.each { |socket| socket.transmit(cmessage) }
         end
@@ -81,14 +81,14 @@ module AnyCable
         sockets.each_key { |socket| socket.transmit(message) }
       end
 
-      def disconnect(identifier, reconnect)
+      def disconnect(identifier, reconnect, coder)
         sockets = @sync.synchronize do
           return unless @streams[INTERNAL_STREAM].key?(identifier)
 
           @streams[INTERNAL_STREAM][identifier].to_a
         end
 
-        msg = disconnect_message("remote", reconnect)
+        msg = disconnect_message("remote", reconnect, coder)
 
         sockets.each do |socket|
           socket.transmit(msg)
@@ -115,9 +115,8 @@ module AnyCable
         coder.encode(identifier: channel_id, message: message)
       end
 
-      # FIXME: coder support?
-      def disconnect_message(reason, reconnect)
-        {type: :disconnect, reason: reason, reconnect: reconnect}.to_json
+      def disconnect_message(reason, reconnect, coder)
+        coder.encode({type: :disconnect, reason: reason, reconnect: reconnect})
       end
     end
   end
