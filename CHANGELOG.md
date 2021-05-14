@@ -2,6 +2,8 @@
 
 ## master
 
+## 0.4.0 (2020-05-14)
+
 - Added Msgpack coder support. ([@palkan][])
 
 ## 0.3.0 (2020-05-12)
