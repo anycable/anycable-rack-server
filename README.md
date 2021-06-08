@@ -74,7 +74,8 @@ config.any_cable_rack.rpc_port = 50051
 
 ## Broadcast adapters
 
-AnyCable Rack supports Redis (default) and HTTP broadcast adapters (see [the documentation](https://docs.anycable.io/#/ruby/broadcast_adapters)).
+AnyCable Rack supports Redis (default) and HTTP broadcast adapters
+(see [the documentation](https://docs.anycable.io/ruby/broadcast_adapters)).
 
 Broadcast adapter is inherited from AnyCable configuration (so, you don't need to configure it twice).
 
