@@ -12,8 +12,12 @@ module AnyCable
             MessagePack.unpack(bin)
           end
 
-          def encode(ruby_obj)
-            BinaryFrame.new(MessagePack.pack(ruby_obj))
+          def encode(ruby_obj, binary_frame_wrap: true)
+            message_packed = MessagePack.pack(ruby_obj)
+
+            return message_packed unless binary_frame_wrap
+
+            BinaryFrame.new(message_packed)
           end
         end
       end
