@@ -2,6 +2,10 @@
 
 ## master
 
+## 0.5.0 (2020-05-14)
+
+- Added Protobuf coder support. ([@prog-supdex][])
+
 ## 0.4.0 (2020-05-14)
 
 - Added Msgpack coder support. ([@palkan][])
@@ -49,3 +53,4 @@ That would allow us to re-use common parameters between `anycable` and `anycable
 
 [@palkan]: https://github.com/palkan
 [@tuwukee]: https://github.com/tuwukee
+[@prog-supdex]: https://github.com/prog-supdex
