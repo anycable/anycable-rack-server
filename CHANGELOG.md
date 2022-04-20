@@ -2,7 +2,7 @@
 
 ## master
 
-## 0.5.0 (2020-05-14)
+## 0.5.0 (2022-01-11)
 
 - Added Protobuf coder support. ([@prog-supdex][])
 
