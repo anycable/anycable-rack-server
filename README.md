@@ -26,7 +26,7 @@ run app
 
 ## Usage with Rails
 
-Add `gem "anycable-rack-server"` to you `Gemfile` and make sure your Action Cable adapter is set to `:any_cable`. That's it! We automatically start AnyCable Rack server for your at `/cable` path.
+Add `gem "anycable-rack-server"` to you `Gemfile` and make sure your Action Cable adapter is set to `:any_cable`. That's it! We automatically start AnyCable Rack server for you at `/cable` path.
 
 ## Configuration
 
