@@ -57,6 +57,7 @@ module AnyCable
         when "subscribe" then subscribe(channel_identifier)
         when "unsubscribe" then unsubscribe(channel_identifier)
         when "message" then send_message(channel_identifier, decoded["data"])
+        when "history" then send_history(channel_identifier, decoded["history"])
         else
           log(:error, "Command not found #{command}")
         end
@@ -131,6 +132,11 @@ module AnyCable
         response = rpc_command("message", identifier, data)
         log(:error, "RPC message command failed: #{response.inspect}") if response.status == :ERROR
         process_command(response, identifier)
+      end
+
+      def send_history(identifier, history)
+        log(:debug) { "History is not truly supported. Responding with reject_history" }
+        transmit({"type" => "reject_history"})
       end
 
       def process_command(response, identifier)

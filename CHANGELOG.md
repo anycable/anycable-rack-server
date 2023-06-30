@@ -2,6 +2,12 @@
 
 ## master
 
+## 0.5.1 (2023-06-29)
+
+- Accept `actioncable-v1-ext-json` clients. ([@palkan][])
+
+Only support protocol API, not features.
+
 ## 0.5.0 (2022-01-11)
 
 - Added Protobuf coder support. ([@prog-supdex][])

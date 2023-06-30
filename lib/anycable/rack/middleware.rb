@@ -9,7 +9,7 @@ require "anycable/rack/socket"
 module AnyCable
   module Rack
     class Middleware # :nodoc:
-      PROTOCOLS = %w[actioncable-v1-json actioncable-v1-msgpack actioncable-unsupported actioncable-v1-protobuf].freeze
+      PROTOCOLS = %w[actioncable-v1-json actioncable-v1-ext-json actioncable-v1-msgpack actioncable-unsupported actioncable-v1-protobuf].freeze
 
       attr_reader :pinger,
         :hub,
